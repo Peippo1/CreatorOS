@@ -20,27 +20,27 @@ import {
 const workflow = [
   {
     title: "Transcript/Input",
-    description: "Drop in raw thinking, calls, scripts, or messy notes.",
+    description: "Drop in raw thinking, calls, scripts, or field notes.",
     icon: FileTextIcon,
   },
   {
     title: "Audience Intelligence",
-    description: "Extract audience pains, motives, language, and buying context.",
+    description: "Extract pains, motives, language, objections, and content gaps.",
     icon: BrainCircuitIcon,
   },
   {
     title: "Content Strategy",
-    description: "Turn audience signal into hooks, titles, pillars, and experiments.",
+    description: "Turn audience signal into positioning, hooks, and testable bets.",
     icon: LineChartIcon,
   },
   {
-    title: "Repurposing",
-    description: "Transform one source into platform-native assets.",
+    title: "Strategic Repurposing",
+    description: "Adapt the strongest angles into platform-native assets.",
     icon: Layers3Icon,
   },
   {
     title: "Creator Growth Pack",
-    description: "Ship a usable strategy pack instead of a loose brainstorm.",
+    description: "Ship audience insight, content gaps, and growth experiments.",
     icon: SparklesIcon,
   },
 ];
@@ -70,9 +70,8 @@ export default function Home() {
               CreatorOS
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
-              An AI operating system that turns creator transcripts into audience
-              intelligence, platform strategy, repurposed content, and growth
-              experiments.
+              Turn creator transcripts into audience intelligence, content gap
+              discovery, platform-aware experiments, and strategic repurposing.
             </p>
           </div>
 
@@ -110,13 +109,17 @@ export default function Home() {
                   Audience Signal
                 </p>
                 <p className="mt-3 text-sm leading-6">
-                  Creators want a repeatable system for turning raw ideas into
-                  content assets that match audience intent.
+                  The source material points to a strategy gap: creators need
+                  sharper audience signal before they need more post ideas.
                 </p>
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {["Viral hooks", "Titles", "Short-form ideas", "Experiments"].map(
-                  (item) => (
+                {[
+                  "Audience gaps",
+                  "Hook hypotheses",
+                  "Platform angles",
+                  "Growth experiments",
+                ].map((item) => (
                     <div key={item} className="rounded-lg border bg-background p-4">
                       <p className="text-sm font-medium">{item}</p>
                       <div className="mt-4 flex flex-col gap-2">
@@ -124,8 +127,7 @@ export default function Home() {
                         <span className="h-2 w-4/5 rounded-full bg-muted" />
                       </div>
                     </div>
-                  ),
-                )}
+                  ))}
               </div>
             </div>
           </div>
@@ -136,11 +138,12 @@ export default function Home() {
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-16">
           <div className="flex max-w-2xl flex-col gap-3">
             <h2 className="text-3xl font-semibold tracking-tight">
-              One workflow, three focused agents.
+              Three specialised agents beat one generic prompt.
             </h2>
             <p className="text-muted-foreground">
-              CreatorOS keeps the MVP narrow: one excellent generation path with
-              typed outputs and an agent flow that is easy to extend.
+              A single prompt tends to blur audience diagnosis, strategy, and
+              production. CreatorOS separates those jobs so every output has a
+              clear reason to exist.
             </p>
           </div>
 

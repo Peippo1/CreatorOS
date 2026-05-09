@@ -24,11 +24,12 @@ export default function GeneratePage() {
       <section className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 pb-14 pt-8">
         <div className="flex max-w-3xl flex-col gap-3">
           <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-            Generate a Creator Growth Pack
+            Build a Creator Growth Pack
           </h1>
           <p className="text-lg leading-8 text-muted-foreground">
-            Paste a transcript or source idea, choose the audience context, and
-            run the full CreatorOS agent workflow.
+            Paste source material, define the audience, and turn raw thinking
+            into audience intelligence, content gaps, and platform-aware growth
+            experiments.
           </p>
         </div>
 

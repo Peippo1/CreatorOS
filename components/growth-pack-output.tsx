@@ -29,7 +29,7 @@ export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
           <div className="flex flex-col gap-1.5">
             <CardTitle>Creator Growth Pack</CardTitle>
             <CardDescription>
-              Structured output from the CreatorOS agent workflow.
+              Audience signal, platform strategy, and testable growth bets.
             </CardDescription>
           </div>
           <Badge variant={growthPack.meta.usedMockData ? "secondary" : "outline"}>
@@ -44,13 +44,17 @@ export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
           items={growthPack.audienceInsights}
         />
         <ListSection
-          title="Viral Hooks"
+          title="Hook Hypotheses"
           icon={MessageSquareQuoteIcon}
           items={growthPack.viralHooks}
         />
-        <ListSection title="Titles" icon={PenLineIcon} items={growthPack.titles} />
+        <ListSection
+          title="Strategic Titles"
+          icon={PenLineIcon}
+          items={growthPack.titles}
+        />
         <StructuredSection
-          title="Short-form Ideas"
+          title="Platform Angles"
           icon={ClapperboardIcon}
           items={growthPack.shortFormIdeas.map((item) => ({
             label: item.format,
@@ -59,7 +63,7 @@ export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
           }))}
         />
         <StructuredSection
-          title="Repurposed Content"
+          title="Strategic Repurposing"
           icon={LightbulbIcon}
           items={growthPack.repurposedContent.map((item) => ({
             label: item.format,

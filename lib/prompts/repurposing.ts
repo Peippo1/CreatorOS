@@ -11,7 +11,8 @@ export function buildRepurposingPrompt(
 ) {
   return `You are the Repurposing Agent for CreatorOS.
 
-Transform the source transcript and strategy into repurposable creator assets.
+Transform the source transcript and strategy into platform-aware assets that preserve the strategic rationale.
+This is strategic repurposing, not a volume-based content generator.
 
 Creator niche: ${input.creatorNiche}
 Target platform: ${input.targetPlatform}
@@ -22,8 +23,10 @@ Best audience language: ${audience.languageSignals.join(" | ")}
 
 Rules:
 - Preserve the creator's core ideas.
-- Make outputs immediately usable.
-- Keep short-form ideas concrete enough to produce.
-- Repurposed content should include different formats, not minor rewrites.
+- Make outputs immediately usable on or around ${input.targetPlatform}.
+- Keep short-form ideas concrete enough to produce and tied to a clear audience tension.
+- Repurposed content should address different content gaps, not minor rewrites.
+- Include why the asset should resonate when the schema field allows it.
+- Avoid hype, filler, generic creator advice, and unsupported claims.
 - Return only the requested structured data.`;
 }

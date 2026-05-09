@@ -7,64 +7,71 @@ export function createMockGrowthPack(input: GenerateInput): CreatorGrowthPack {
 
   return {
     audienceInsights: [
-      `${input.creatorNiche} buyers want a clear point of view, not broad education.`,
-      `The strongest angle is helping ${audience} move from passive learning to visible execution.`,
-      `The transcript can be framed as a before-and-after operating system for creator growth.`,
-      `Use direct language that names the cost of inconsistency and unclear positioning.`,
+      `${audience} do not need another list of tactics. They need a way to diagnose why their current content is not creating demand.`,
+      `The strongest tension is the gap between idea quality and audience signal: creators can sound smart while still missing the objection the audience cares about.`,
+      `Content gap: the source explains the workflow, but it should also show what changes when audience intelligence comes before repurposing.`,
+      `The message should resonate because it reframes content production as a strategy problem, not a posting-volume problem.`,
+      `Use language around signal, gaps, objections, and experiments because it gives ${audience} a more precise job to hire CreatorOS for.`,
     ],
     viralHooks: [
-      `Most ${input.creatorNiche} creators do not have a content problem. They have a signal problem.`,
-      `Your transcript is not content. It is a growth system waiting to be packaged.`,
-      `If your ideas are strong but your posts are flat, this is the missing layer.`,
-      `The fastest way to grow on ${platform}: turn one idea into five audience-specific assets.`,
-      `Stop asking what to post. Start asking what your audience needs to believe next.`,
+      `Most ${input.creatorNiche} creators do not have a content problem. They have an audience signal problem.`,
+      `If your posts are accurate but ignored, you may be answering the wrong audience question.`,
+      `Repurposing without audience intelligence just multiplies weak positioning.`,
+      `Before you turn one idea into ten assets, find the content gap the audience already feels.`,
+      `The best ${platform} ideas start with a testable audience hypothesis, not a blank page.`,
     ],
     titles: [
-      `The CreatorOS Method for Turning One Transcript Into a Growth Pack`,
-      `How ${input.creatorNiche} Creators Can Build a Repeatable Content Engine`,
-      `From Raw Ideas to Platform-Native Content in One Workflow`,
-      `A Practical Content System for ${input.targetAudience}`,
-      `The Operating System Behind Consistent Creator Growth`,
+      `Audience Intelligence Before Repurposing: A Better Creator Workflow`,
+      `How ${input.creatorNiche} Creators Find the Content Gaps Their Audience Feels`,
+      `From Raw Transcript to Platform-Aware Growth Strategy`,
+      `A Practical Growth Pack for ${input.targetAudience}`,
+      `Why Strong Creator Content Starts With Audience Diagnosis`,
     ],
     shortFormIdeas: [
       {
-        format: "Contrarian opener",
-        idea: "Open with the claim that creators do not need more ideas; they need better orchestration.",
-        angle: "Problem reframing",
+        format: `${platform} hypothesis post`,
+        idea: "State the hypothesis that low engagement often comes from weak audience diagnosis, then show the three questions CreatorOS asks before repurposing.",
+        angle: "Resonates because it names the hidden failure mode behind flat content.",
       },
       {
-        format: "Three-step breakdown",
-        idea: "Show Transcript, Audience Intelligence, Strategy, and Repurposing as a repeatable loop.",
-        angle: "Workflow clarity",
+        format: "Content gap breakdown",
+        idea: "Compare a generic post angle with a gap-led angle that handles a specific objection from the audience.",
+        angle: "Makes the value of audience intelligence visible instead of abstract.",
       },
       {
-        format: "Before/after post",
-        idea: "Contrast a raw transcript with the final Creator Growth Pack assets.",
-        angle: "Transformation proof",
+        format: "Before/after workflow",
+        idea: "Show how one transcript becomes audience insight, hook hypothesis, platform angle, and a measurable experiment.",
+        angle: "Demonstrates strategic repurposing without promising automatic growth.",
       },
     ],
     repurposedContent: [
       {
-        format: `${platform} post`,
+        format: `${platform} strategy post`,
         content:
-          "Most creators turn one idea into one post. The better move is to turn one source into audience insights, hooks, titles, short-form ideas, repurposed assets, and growth experiments.",
+          "Most creators turn one idea into more posts. The sharper move is to turn one source into audience intelligence first: what does the audience believe, what objection is blocking them, and what content gap has not been answered yet?",
       },
       {
-        format: "Newsletter intro",
+        format: "Newsletter strategy note",
         content:
-          "This week I tested a sharper way to think about content: not as individual posts, but as an operating system that converts raw thinking into reusable growth assets.",
+          "This week I am testing a stricter content workflow: no repurposing until the audience tension is clear. The goal is not more assets. It is better strategic fit between the idea, the platform, and the belief the audience needs to adopt.",
       },
       {
-        format: "Short-form script",
+        format: "Short-form diagnostic script",
         content:
-          "You do not need to start from a blank page. Start with a transcript. Extract the audience tension. Build the strategy. Then repurpose the strongest angles into platform-native assets.",
+          "If your content is useful but not moving, ask three questions: what objection does this handle, what content gap does it fill, and what platform behavior are we trying to earn?",
+      },
+      {
+        format: "Content gap prompt",
+        content:
+          "What does your audience already know, what do they still misunderstand, and what proof would make them act this week? Use the answers before writing the next post.",
       },
     ],
     growthExperiments: [
-      `Publish three hooks on ${platform} with the same core idea and compare saves, replies, and profile clicks.`,
-      "Turn the strongest audience pain point into a recurring weekly content pillar.",
-      "Repurpose the same transcript into a text post, short video script, and newsletter section.",
-      "Ask the audience which title feels most urgent, then use the winner as the next content brief.",
+      `Run a three-hook test on ${platform}: one pain-led hook, one objection-led hook, and one content-gap hook. Compare replies, saves, and profile clicks after 48 hours.`,
+      "Publish one diagnostic post that asks the audience to choose their biggest blocker. Use the top reply as the next content gap brief.",
+      "Turn the same transcript into two assets only: one strategy post and one short diagnostic script. Compare which creates more qualified replies.",
+      "Test a before/after framing that shows raw idea versus audience-intelligence-led output. Track comments that mention clarity, relevance, or timing.",
+      "Ask the audience which title feels most urgent, then publish the winning angle with a specific objection addressed in the first third.",
     ],
     meta: {
       model: DEFAULT_OPENAI_MODEL,

@@ -37,7 +37,7 @@ const platforms: TargetPlatform[] = [
 ];
 
 const sampleTranscript =
-  "Most creators are not short on ideas. They are short on a reliable system for turning raw thinking into audience-specific content. The best creator teams treat every transcript, call, and voice note as source material. First they identify the audience tension, then they shape the content strategy, then they repurpose the strongest angles into platform-native assets.";
+  "Most creators are not short on ideas. They are short on audience signal. Their content often explains what they know, but it does not always answer the exact objection, urgency, or language their audience is already carrying. The best creator teams treat every transcript, call, and voice note as research. First they identify the audience tension and content gaps, then they shape platform-specific strategy, then they repurpose only the strongest angles into testable assets.";
 
 type GenerateResponse =
   | {
@@ -102,21 +102,21 @@ export function GenerateWorkspace() {
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[0.9fr_1.1fr]">
       <Card className="h-fit">
         <CardHeader>
-          <CardTitle>Source material</CardTitle>
+          <CardTitle>Strategy input</CardTitle>
           <CardDescription>
-            The MVP accepts one rich input and routes it through the three-agent
-            workflow.
+            Start with one source and enough context for the agents to infer
+            audience demand, gaps, and platform fit.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="transcript">Transcript</Label>
+              <Label htmlFor="transcript">Transcript or research notes</Label>
               <Textarea
                 id="transcript"
                 value={transcript}
                 onChange={(event) => setTranscript(event.target.value)}
-                placeholder="Paste a transcript, notes, or raw creator idea..."
+                placeholder="Paste a transcript, sales call notes, comments, or raw creator thinking..."
                 rows={10}
                 disabled={isLoading}
               />
@@ -124,7 +124,7 @@ export function GenerateWorkspace() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="creator-niche">Creator niche</Label>
+                <Label htmlFor="creator-niche">Creator category</Label>
                 <Input
                   id="creator-niche"
                   value={creatorNiche}
@@ -135,7 +135,7 @@ export function GenerateWorkspace() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label htmlFor="target-platform">Target platform</Label>
+                <Label htmlFor="target-platform">Primary platform</Label>
                 <Select
                   value={targetPlatform}
                   onValueChange={(value) =>
@@ -160,7 +160,7 @@ export function GenerateWorkspace() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="target-audience">Target audience</Label>
+              <Label htmlFor="target-audience">Audience segment</Label>
               <Input
                 id="target-audience"
                 value={targetAudience}
@@ -183,7 +183,7 @@ export function GenerateWorkspace() {
               ) : (
                 <SparklesIcon data-icon="inline-start" />
               )}
-              {isLoading ? "Generating" : "Generate Growth Pack"}
+              {isLoading ? "Building strategy" : "Build Growth Pack"}
             </Button>
           </form>
         </CardContent>
@@ -201,11 +201,11 @@ export function GenerateWorkspace() {
                 <SparklesIcon className="size-5" />
               </div>
               <div className="flex max-w-md flex-col gap-2">
-                <h2 className="text-xl font-semibold">Growth Pack preview</h2>
+                <h2 className="text-xl font-semibold">Strategy output preview</h2>
                 <p className="text-sm leading-6 text-muted-foreground">
-                  The generated output will appear here with audience insights,
-                  hooks, titles, short-form ideas, repurposed assets, and growth
-                  experiments.
+                  The output will appear here with audience intelligence, hook
+                  hypotheses, platform angles, strategic repurposing, and
+                  testable growth experiments.
                 </p>
               </div>
             </CardContent>

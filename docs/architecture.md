@@ -9,17 +9,18 @@ Generate request
   -> validate input with Zod
   -> Audience Intelligence Agent
   -> Content Strategy Agent
-  -> Repurposing Agent
+  -> Strategic Repurposing Agent
   -> compose Creator Growth Pack
 ```
 
 Each agent lives in its own module and owns a single responsibility:
 
-- Audience Intelligence Agent extracts audience insights, pain points, motivations, and language signals.
-- Content Strategy Agent converts audience intelligence into positioning, hooks, titles, pillars, and growth experiments.
-- Repurposing Agent turns the source transcript and strategy into short-form ideas and repurposed content.
+- Audience Intelligence Agent extracts audience insights, pain points, motivations, language signals, objections, and likely content gaps.
+- Content Strategy Agent converts audience intelligence into positioning, hook hypotheses, strategic titles, pillars, and measurable growth experiments.
+- Strategic Repurposing Agent turns the source transcript and strategy into platform-aware assets that preserve the audience rationale.
 
 The orchestration is deliberately sequential because each downstream step depends on the structured output from the previous agent.
+This separation is the main product bet: a generic prompt tends to blend diagnosis, strategy, and asset generation, while CreatorOS keeps each job narrow enough to produce sharper growth strategy.
 
 ## File Structure
 
@@ -48,6 +49,7 @@ The structure is prepared for the next production layers without adding them to 
 - Add brand voice memory by passing a creator profile object into each prompt builder.
 - Add creator profiles by replacing raw form fields with persisted profile context.
 - Add experiment tracking by persisting `growthExperiments` and recording outcomes.
+- Add content gap scoring by extending the output schema with explicit gap fields once the UI needs first-class support.
 - Add social integrations by turning repurposed content into platform-specific publishing drafts.
 - Add OpenAI Agents SDK later by keeping prompts, tools, and agent boundaries separated from UI code.
 

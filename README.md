@@ -1,6 +1,6 @@
 # CreatorOS
 
-CreatorOS is an AI operating system for creators and internet brands. The MVP turns one transcript or raw input into a structured Creator Growth Pack through a focused multi-agent workflow.
+CreatorOS is an AI operating system for creators and internet brands. The MVP turns one transcript or research input into a structured Creator Growth Pack built around audience intelligence, creator growth strategy, platform-aware experiments, content gap discovery, and strategic repurposing.
 
 ## MVP Workflow
 
@@ -8,17 +8,17 @@ CreatorOS is an AI operating system for creators and internet brands. The MVP tu
 Transcript/Input
   -> Audience Intelligence Agent
   -> Content Strategy Agent
-  -> Repurposing Agent
+  -> Strategic Repurposing Agent
   -> Final Creator Growth Pack
 ```
 
 The generated pack includes:
 
 - Audience Insights
-- Viral Hooks
-- Titles
-- Short-form Ideas
-- Repurposed Content
+- Hook Hypotheses
+- Strategic Titles
+- Platform Angles
+- Strategic Repurposing
 - Growth Experiments
 
 ## Architecture
@@ -32,6 +32,8 @@ CreatorOS is intentionally lean:
 - Zod schemas for request and agent output typing
 - Explicit orchestration in `lib/orchestration`
 - Mock output when `OPENAI_API_KEY` is missing
+
+The product is not positioned as a generic content generator. The agents separate diagnosis, strategy, and production so each output has a specific audience rationale and a testable growth purpose.
 
 See [docs/architecture.md](docs/architecture.md) for the agent flow, file structure, extension points, and backend migration notes.
 
@@ -92,6 +94,7 @@ npm run start
 - Brand voice memory
 - Creator profiles
 - Experiment tracking
+- Content gap scoring
 - Social integrations
 - FastAPI backend migration
 - OpenAI Agents SDK integration
