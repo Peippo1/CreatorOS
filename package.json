@@ -15,7 +15,7 @@
     "class-variance-authority": "latest",
     "clsx": "latest",
     "lucide-react": "latest",
-    "next": "latest",
+    "next": "^16.3.0-canary.17",
     "openai": "latest",
     "react": "latest",
     "react-dom": "latest",
