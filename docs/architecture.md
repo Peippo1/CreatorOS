@@ -41,6 +41,17 @@ lib/
   types/                     Zod schemas and TypeScript types
 ```
 
+## Public Route Safeguards
+
+`POST /api/generate` keeps deployment hardening local to the MVP:
+
+- Zod validates transcript, creator niche, platform, and audience fields before orchestration runs.
+- Request caps are intentionally small: 20,000 characters for transcript, 120 for creator niche, and 160 for target audience.
+- Target platform must match the supported enum values.
+- A small in-memory limiter allows 10 requests per 10 minutes per IP and returns `429` with `Retry-After` when exceeded.
+
+The limiter reads the first `x-forwarded-for` IP, then `x-real-ip`, then falls back to `unknown`. Because state is process-local, this is appropriate only for development and single-instance deployments. A multi-instance or serverless production deployment should move rate limiting to a shared store, gateway, or hosting-platform control.
+
 ## Extension Points
 
 The structure is prepared for the next production layers without adding them to the MVP:

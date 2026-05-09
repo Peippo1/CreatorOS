@@ -80,13 +80,37 @@ The code prefers `OPENAI_MODEL` when provided. If no model is configured, it use
 
 If `OPENAI_API_KEY` is missing, CreatorOS returns deterministic mock output so the product workflow can be demonstrated locally.
 
+## Public Route Limits
+
+`POST /api/generate` has lightweight MVP safeguards:
+
+- Transcript: 80 to 20,000 characters
+- Creator niche: 2 to 120 characters
+- Target audience: 2 to 160 characters
+- Target platform: one of the supported platform values in the app selector
+- Rate limit: 10 requests per 10 minutes per IP
+
+The rate limiter is in-memory and uses `x-forwarded-for`, then `x-real-ip`, then `unknown`. It is suitable for local development and single-instance deployments only. Multi-instance or serverless production deployments should replace it with a shared store or platform rate-limit feature.
+
 ## Scripts
 
 ```bash
 npm run dev
 npm run lint
+npm run test
+npm run test:watch
 npm run build
 npm run start
+```
+
+## Testing
+
+CreatorOS uses Vitest for fast unit tests around schema validation, mock output shape, and missing-key orchestration behavior. Tests do not call the live OpenAI API.
+
+Run the suite:
+
+```bash
+npm run test
 ```
 
 ## Roadmap

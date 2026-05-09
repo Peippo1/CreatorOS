@@ -9,20 +9,38 @@ export const targetPlatformSchema = z.enum([
   "Newsletter",
 ]);
 
+export const GENERATION_LIMITS = {
+  transcriptMaxLength: 20_000,
+  creatorNicheMaxLength: 120,
+  targetAudienceMaxLength: 160,
+} as const;
+
 export const generateInputSchema = z.object({
   transcript: z
     .string()
     .trim()
-    .min(80, "Add at least 80 characters of transcript or source material."),
+    .min(80, "Add at least 80 characters of transcript or source material.")
+    .max(
+      GENERATION_LIMITS.transcriptMaxLength,
+      "Transcript must be 20,000 characters or fewer.",
+    ),
   creatorNiche: z
     .string()
     .trim()
-    .min(2, "Add a creator niche."),
+    .min(2, "Add a creator niche.")
+    .max(
+      GENERATION_LIMITS.creatorNicheMaxLength,
+      "Creator niche must be 120 characters or fewer.",
+    ),
   targetPlatform: targetPlatformSchema,
   targetAudience: z
     .string()
     .trim()
-    .min(2, "Add a target audience."),
+    .min(2, "Add a target audience.")
+    .max(
+      GENERATION_LIMITS.targetAudienceMaxLength,
+      "Target audience must be 160 characters or fewer.",
+    ),
 });
 
 export const audienceIntelligenceSchema = z.object({
