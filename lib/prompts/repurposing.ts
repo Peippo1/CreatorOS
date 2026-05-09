@@ -30,6 +30,7 @@ Rules:
 - Keep short-form ideas concrete enough to produce and tied to a clear audience tension.
 - Repurposed content should address different content gaps, not minor rewrites.
 - Include why the asset should resonate when the schema field allows it.
-- Avoid hype, filler, generic creator advice, and unsupported claims.
+- Use platform-native packaging: opening frame, viewer behavior, comment/reply intent, save/share intent, or retention logic where relevant.
+- Avoid hype, filler, generic CTAs, "post consistently", generic creator advice, and unsupported claims.
 - Return only the requested structured data.`;
 }

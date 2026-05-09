@@ -29,7 +29,9 @@ Rules:
 - Titles should be clear, high-signal, and non-clickbait.
 - Growth experiments should be concrete, measurable, and actionable in one week.
 - Include strategic rationale inside the phrasing where the schema allows it.
+- Use audience psychology to explain why an angle should resonate.
+- Include platform-native observations about format, behavior, or engagement intent where useful.
 - Favor content gap discovery, objection handling, and positioning over generic post ideas.
-- Avoid hype, filler, broad motivation, and vague creator advice.
+- Avoid hype, filler, broad motivation, generic CTAs, "post consistently", and vague creator advice.
 - Return only the requested structured data.`;
 }

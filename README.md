@@ -99,6 +99,7 @@ npm run dev
 npm run lint
 npm run test
 npm run test:watch
+npm run eval:prompts
 npm run build
 npm run start
 ```
@@ -112,6 +113,26 @@ Run the suite:
 ```bash
 npm run test
 ```
+
+## Prompt Evaluation
+
+Run local prompt evaluations with:
+
+```bash
+npm run eval:prompts
+```
+
+The evaluator runs three realistic creator fixtures through the orchestration pipeline and prints structured Growth Pack output. With `OPENAI_API_KEY` configured, it exercises the live agent prompts. Without a key, it uses the deterministic mock path, which is useful for shape checks but not prompt-quality review.
+
+When iterating on prompts, keep changes narrow and compare outputs against:
+
+- Specificity to the transcript and audience
+- Strategic usefulness
+- Platform awareness
+- Repetition across sections
+- Generic advice or bland CTA leakage
+- Experiment quality
+- Content gap quality
 
 ## Roadmap
 
