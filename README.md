@@ -15,6 +15,7 @@ Transcript/Input
 The generated pack includes:
 
 - Audience Insights
+- Content Gaps
 - Hook Hypotheses
 - Strategic Titles
 - Platform Angles
@@ -33,7 +34,7 @@ CreatorOS is intentionally lean:
 - Explicit orchestration in `lib/orchestration`
 - Mock output when `OPENAI_API_KEY` is missing
 
-The product is not positioned as a generic content generator. The agents separate diagnosis, strategy, and production so each output has a specific audience rationale and a testable growth purpose.
+The product is not positioned as a generic content generator. The agents separate diagnosis, strategy, content gap discovery, and production so each output has a specific audience rationale and a testable growth purpose.
 
 See [docs/architecture.md](docs/architecture.md) for the agent flow, file structure, extension points, and backend migration notes.
 

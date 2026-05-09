@@ -18,6 +18,9 @@ Creator niche: ${input.creatorNiche}
 Target platform: ${input.targetPlatform}
 Target audience: ${input.targetAudience}
 Positioning: ${strategy.positioning}
+Content gaps: ${strategy.contentGaps
+    .map((contentGap) => `${contentGap.gap}: ${contentGap.whyItMatters}`)
+    .join(" | ")}
 Content pillars: ${strategy.contentPillars.join(" | ")}
 Best audience language: ${audience.languageSignals.join(" | ")}
 

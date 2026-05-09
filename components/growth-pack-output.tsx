@@ -1,6 +1,7 @@
 import {
   BeakerIcon,
   ClapperboardIcon,
+  CompassIcon,
   LightbulbIcon,
   MessageSquareQuoteIcon,
   PenLineIcon,
@@ -42,6 +43,15 @@ export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
           title="Audience Insights"
           icon={UsersIcon}
           items={growthPack.audienceInsights}
+        />
+        <StructuredSection
+          title="Content Gaps"
+          icon={CompassIcon}
+          items={growthPack.contentGaps.map((contentGap) => ({
+            label: contentGap.gap,
+            title: contentGap.whyItMatters,
+            description: contentGap.suggestedExperiment,
+          }))}
         />
         <ListSection
           title="Hook Hypotheses"
@@ -133,7 +143,12 @@ function StructuredSection({
       <div className="grid grid-cols-1 gap-3">
         {items.map((item) => (
           <article key={`${item.label}-${item.title}`} className="rounded-md border bg-card p-4">
-            <Badge variant="secondary">{item.label}</Badge>
+            <Badge
+              variant="secondary"
+              className="max-w-full whitespace-normal text-left"
+            >
+              {item.label}
+            </Badge>
             <p className="mt-3 text-sm leading-6">{item.title}</p>
             {item.description ? (
               <p className="mt-2 text-sm text-muted-foreground">

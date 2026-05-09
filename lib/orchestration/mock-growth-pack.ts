@@ -13,6 +13,27 @@ export function createMockGrowthPack(input: GenerateInput): CreatorGrowthPack {
       `The message should resonate because it reframes content production as a strategy problem, not a posting-volume problem.`,
       `Use language around signal, gaps, objections, and experiments because it gives ${audience} a more precise job to hire CreatorOS for.`,
     ],
+    contentGaps: [
+      {
+        gap: "Audience diagnosis before asset production",
+        whyItMatters:
+          "The source says creators need a system, but the audience needs to see why diagnosis changes the quality of every downstream asset.",
+        suggestedExperiment: `Publish a ${platform} post comparing a generic repurposing workflow with an audience-intelligence-first workflow and track saves plus qualified replies.`,
+      },
+      {
+        gap: "Proof that content gaps are discoverable from messy source material",
+        whyItMatters:
+          "Creators may agree with the strategy but doubt that transcripts and notes can reveal useful audience objections.",
+        suggestedExperiment:
+          "Share one anonymized transcript excerpt, extract three audience gaps from it, and ask readers which gap feels most commercially urgent.",
+      },
+      {
+        gap: "Platform behavior tied to strategic intent",
+        whyItMatters:
+          "The audience needs to understand that a strong idea should be shaped differently depending on whether the goal is replies, saves, shares, or clicks.",
+        suggestedExperiment: `Run two ${platform} variants from the same insight: one optimized for replies and one optimized for saves. Compare the dominant engagement signal after 48 hours.`,
+      },
+    ],
     viralHooks: [
       `Most ${input.creatorNiche} creators do not have a content problem. They have an audience signal problem.`,
       `If your posts are accurate but ignored, you may be answering the wrong audience question.`,

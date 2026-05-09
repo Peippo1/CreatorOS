@@ -22,6 +22,9 @@
     "tailwind-merge": "latest",
     "zod": "latest"
   },
+  "overrides": {
+    "postcss": "8.5.14"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "latest",
     "@types/node": "latest",

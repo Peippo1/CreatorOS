@@ -204,8 +204,8 @@ export function GenerateWorkspace() {
                 <h2 className="text-xl font-semibold">Strategy output preview</h2>
                 <p className="text-sm leading-6 text-muted-foreground">
                   The output will appear here with audience intelligence, hook
-                  hypotheses, platform angles, strategic repurposing, and
-                  testable growth experiments.
+                  hypotheses, content gaps, platform angles, strategic
+                  repurposing, and testable growth experiments.
                 </p>
               </div>
             </CardContent>
@@ -224,7 +224,7 @@ function GrowthPackSkeleton() {
         <Skeleton className="h-4 w-72" />
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
-        {Array.from({ length: 6 }).map((_, index) => (
+        {Array.from({ length: 7 }).map((_, index) => (
           <div key={index} className="flex flex-col gap-3 rounded-lg border p-4">
             <Skeleton className="h-4 w-44" />
             <Skeleton className="h-3 w-full" />

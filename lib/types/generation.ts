@@ -33,8 +33,15 @@ export const audienceIntelligenceSchema = z.object({
   languageSignals: z.array(z.string()).min(3).max(6),
 });
 
+export const contentGapSchema = z.object({
+  gap: z.string(),
+  whyItMatters: z.string(),
+  suggestedExperiment: z.string(),
+});
+
 export const contentStrategySchema = z.object({
   positioning: z.string(),
+  contentGaps: z.array(contentGapSchema).min(3).max(5),
   viralHooks: z.array(z.string()).min(5).max(8),
   titles: z.array(z.string()).min(5).max(8),
   contentPillars: z.array(z.string()).min(3).max(5),
@@ -65,6 +72,7 @@ export const repurposingSchema = z.object({
 
 export const creatorGrowthPackSchema = z.object({
   audienceInsights: z.array(z.string()),
+  contentGaps: contentStrategySchema.shape.contentGaps,
   viralHooks: z.array(z.string()),
   titles: z.array(z.string()),
   shortFormIdeas: repurposingSchema.shape.shortFormIdeas,

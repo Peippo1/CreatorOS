@@ -35,6 +35,7 @@ async function runAgentFlow(input: GenerateInput): Promise<CreatorGrowthPack> {
 
   return {
     audienceInsights: audience.output.audienceInsights,
+    contentGaps: strategy.output.contentGaps,
     viralHooks: strategy.output.viralHooks,
     titles: strategy.output.titles,
     shortFormIdeas: repurposing.output.shortFormIdeas,

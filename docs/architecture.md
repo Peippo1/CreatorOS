@@ -16,7 +16,7 @@ Generate request
 Each agent lives in its own module and owns a single responsibility:
 
 - Audience Intelligence Agent extracts audience insights, pain points, motivations, language signals, objections, and likely content gaps.
-- Content Strategy Agent converts audience intelligence into positioning, hook hypotheses, strategic titles, pillars, and measurable growth experiments.
+- Content Strategy Agent converts audience intelligence into positioning, first-class content gaps, hook hypotheses, strategic titles, pillars, and measurable growth experiments.
 - Strategic Repurposing Agent turns the source transcript and strategy into platform-aware assets that preserve the audience rationale.
 
 The orchestration is deliberately sequential because each downstream step depends on the structured output from the previous agent.
@@ -49,7 +49,7 @@ The structure is prepared for the next production layers without adding them to 
 - Add brand voice memory by passing a creator profile object into each prompt builder.
 - Add creator profiles by replacing raw form fields with persisted profile context.
 - Add experiment tracking by persisting `growthExperiments` and recording outcomes.
-- Add content gap scoring by extending the output schema with explicit gap fields once the UI needs first-class support.
+- Add content gap scoring by extending the existing `contentGaps` objects with priority, confidence, or funnel-stage fields once the UI needs deeper ranking.
 - Add social integrations by turning repurposed content into platform-specific publishing drafts.
 - Add OpenAI Agents SDK later by keeping prompts, tools, and agent boundaries separated from UI code.
 

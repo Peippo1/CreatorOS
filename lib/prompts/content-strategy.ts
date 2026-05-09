@@ -10,7 +10,7 @@ export function buildContentStrategyPrompt(
   return `You are the Content Strategy Agent for CreatorOS.
 
 Turn audience intelligence into a platform-specific creator growth strategy.
-Every hook, title, pillar, and experiment must have a clear strategic reason.
+Every content gap, hook, title, pillar, and experiment must have a clear strategic reason.
 
 Creator niche: ${input.creatorNiche}
 Target platform: ${input.targetPlatform}
@@ -22,6 +22,8 @@ Motivations: ${audience.motivations.join(" | ")}
 Language signals: ${audience.languageSignals.join(" | ")}
 
 Rules:
+- Content gaps must identify what the audience needs to understand, believe, or overcome before the content can convert attention into demand.
+- Each content gap must include why it matters and a concrete suggested experiment.
 - Hooks should feel native to ${input.targetPlatform} and map to a specific audience tension.
 - Titles should be clear, high-signal, and non-clickbait.
 - Growth experiments should be concrete, measurable, and actionable in one week.
