@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: #fbfbfa;
+  --foreground: #111111;
+  --card: #ffffff;
+  --card-foreground: #111111;
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #ffffff;
+  --secondary: #f3f3f1;
+  --secondary-foreground: #181818;
+  --muted: #f1f1ef;
+  --muted-foreground: #6a6a65;
+  --accent: #eef5ff;
+  --accent-foreground: #0f3c68;
+  --destructive: #b42318;
+  --border: #e5e5e1;
+  --input: #e5e5e1;
+  --ring: #111111;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(15, 60, 104, 0.08), transparent 32rem),
+    var(--background);
+  color: var(--foreground);
+  font-feature-settings: "liga" 1, "calt" 1;
+}
+
+::selection {
+  background: #111111;
+  color: #ffffff;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.grid-pattern {
+  background-image:
+    linear-gradient(to right, rgba(17, 17, 17, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(17, 17, 17, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
