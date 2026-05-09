@@ -24,6 +24,7 @@ Language signals: ${audience.languageSignals.join(" | ")}
 Rules:
 - Content gaps must identify what the audience needs to understand, believe, or overcome before the content can convert attention into demand.
 - Each content gap must include why it matters and a concrete suggested experiment.
+- Content gaps should look for unanswered audience questions, missing content pillars, weak platform fit, overlooked angles, and repeatable series opportunities.
 - Hooks should feel native to ${input.targetPlatform} and map to a specific audience tension.
 - Titles should be clear, high-signal, and non-clickbait.
 - Growth experiments should be concrete, measurable, and actionable in one week.

@@ -57,7 +57,7 @@ export default function Home() {
         </Link>
         <Button asChild size="sm">
           <Link href="/generate">
-            Generate Growth Pack
+            Build Growth Pack
             <ArrowRightIcon data-icon="inline-end" />
           </Link>
         </Button>
@@ -70,15 +70,16 @@ export default function Home() {
               CreatorOS
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
-              Turn creator transcripts into audience intelligence, content gap
-              discovery, platform-aware experiments, and strategic repurposing.
+              Convert creator source material into audience intelligence,
+              content gap discovery, platform-aware experiments, and strategic
+              repurposing.
             </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg">
               <Link href="/generate">
-                Generate Growth Pack
+                Build Growth Pack
                 <ArrowRightIcon data-icon="inline-end" />
               </Link>
             </Button>
@@ -115,7 +116,7 @@ export default function Home() {
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {[
-                  "Audience gaps",
+                  "Content gaps",
                   "Hook hypotheses",
                   "Platform angles",
                   "Growth experiments",
@@ -141,9 +142,10 @@ export default function Home() {
               Three specialised agents beat one generic prompt.
             </h2>
             <p className="text-muted-foreground">
-              A single prompt tends to blur audience diagnosis, strategy, and
-              production. CreatorOS separates those jobs so every output has a
-              clear reason to exist.
+              Generic prompting blends diagnosis, strategy, and production into
+              one blurry answer. CreatorOS separates those jobs so each output
+              carries audience rationale, platform intent, and a testable next
+              move.
             </p>
           </div>
 

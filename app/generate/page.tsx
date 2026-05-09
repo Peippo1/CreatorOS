@@ -3,7 +3,7 @@ import Link from "next/link";
 import { GenerateWorkspace } from "@/components/generate-workspace";
 
 export const metadata = {
-  title: "Generate Growth Pack | CreatorOS",
+  title: "Build Growth Pack | CreatorOS",
 };
 
 export default function GeneratePage() {

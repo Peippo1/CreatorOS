@@ -30,7 +30,8 @@ export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
           <div className="flex flex-col gap-1.5">
             <CardTitle>Creator Growth Pack</CardTitle>
             <CardDescription>
-              Audience signal, platform strategy, and testable growth bets.
+              Audience signal, content gaps, platform strategy, and testable
+              growth bets.
             </CardDescription>
           </div>
           <Badge variant={growthPack.meta.usedMockData ? "secondary" : "outline"}>

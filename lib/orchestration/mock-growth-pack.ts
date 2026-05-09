@@ -33,6 +33,13 @@ export function createMockGrowthPack(input: GenerateInput): CreatorGrowthPack {
           "The audience needs to understand that a strong idea should be shaped differently depending on whether the goal is replies, saves, shares, or clicks.",
         suggestedExperiment: `Run two ${platform} variants from the same insight: one optimized for replies and one optimized for saves. Compare the dominant engagement signal after 48 hours.`,
       },
+      {
+        gap: "Repeatable series for audience objections",
+        whyItMatters:
+          "A one-off post can explain the workflow, but a recurring series can train the audience to see CreatorOS as the system for diagnosing growth blockers.",
+        suggestedExperiment:
+          "Launch a three-part series: one audience objection per post, one content gap behind it, and one experiment the creator can run that week.",
+      },
     ],
     viralHooks: [
       `Most ${input.creatorNiche} creators do not have a content problem. They have an audience signal problem.`,
