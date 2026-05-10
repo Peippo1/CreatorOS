@@ -205,6 +205,17 @@ npm run eval:prompts
 
 The evaluator runs three realistic creator fixtures through the orchestration pipeline and prints structured Growth Pack output. With `OPENAI_API_KEY` configured, it exercises the live agent prompts. Without a key, it uses the deterministic mock path, which is useful for shape checks but not prompt-quality review. That fallback is deterministic and fixture-aware, so it is good for demos and regression checks, not for judging live model quality.
 
+To write local artifacts for comparison over time:
+
+```bash
+npm run eval:prompts -- --write
+npm run eval:prompts -- --write --format json
+```
+
+Each run writes timestamped files into `evaluations/`. The directory is kept in the repo with `.gitkeep`, while generated `.md` and `.json` files are ignored by git. Do not commit evaluation outputs if they include sensitive transcript or source material.
+
+For live evaluations, make sure `OPENAI_API_KEY` is available in your shell or `.env.local`. The script loads local env files before running so it can use the live OpenAI path when the key is present.
+
 When iterating on prompts, keep changes narrow and compare outputs against:
 
 - Specificity to the transcript and audience
@@ -214,6 +225,8 @@ When iterating on prompts, keep changes narrow and compare outputs against:
 - Generic advice or bland CTA leakage
 - Experiment quality
 - Content gap quality
+
+To compare prompt changes over time, keep one run per major prompt change and diff the generated artifacts by fixture. The rubric is intentionally manual: use the blank score and notes fields to record what improved, what regressed, and where the output still reads generic.
 
 ## Mobile
 

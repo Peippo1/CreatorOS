@@ -1,8 +1,40 @@
+import { loadEnvConfig } from "@next/env";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { generateCreatorGrowthPack } from "@/lib/orchestration/generate-growth-pack";
-import type { GenerateInput } from "@/lib/types/generation";
+import { createMockGrowthPack } from "@/lib/orchestration/mock-growth-pack";
+import type { CreatorGrowthPack, GenerateInput } from "@/lib/types/generation";
 
 type EvaluationFixture = GenerateInput & {
   name: string;
+};
+
+type EvaluationFormat = "markdown" | "json";
+
+type EvaluationOptions = {
+  write: boolean;
+  format: EvaluationFormat;
+};
+
+type EvaluationRubricItem = {
+  heading: string;
+  score: string;
+  notes: string;
+};
+
+type EvaluationArtifact = {
+  fixtureName: string;
+  timestamp: string;
+  modelUsed: string;
+  usedMockData: boolean;
+  input: Pick<
+    GenerateInput,
+    "creatorNiche" | "targetAudience" | "targetPlatform" | "transcript"
+  >;
+  rubric: EvaluationRubricItem[];
+  growthPack: CreatorGrowthPack;
 };
 
 const evaluationFixtures: EvaluationFixture[] = [
@@ -32,46 +64,217 @@ const evaluationFixtures: EvaluationFixture[] = [
   },
 ];
 
+const rubricHeadings = [
+  "Specificity",
+  "Strategic usefulness",
+  "Platform awareness",
+  "Repetition risk",
+  "Generic advice risk",
+  "Experiment quality",
+  "Content gap quality",
+] as const;
+
 /*
 Prompt evaluation rubric:
 - Specificity: Does the output use details from the transcript and creator context?
 - Strategic usefulness: Would the creator know what to do next and why?
 - Platform awareness: Are hooks, formats, and experiments native to the target platform?
-- Repetition: Are sections meaningfully different from each other?
-- Generic advice: Does it avoid bland guidance like "post consistently" or vague CTAs?
+- Repetition risk: Are sections meaningfully different from each other?
+- Generic advice risk: Does it avoid bland guidance like "post consistently" or vague CTAs?
 - Experiment quality: Are experiments concrete, measurable, and time-bounded?
 - Content gap quality: Are gaps tied to audience questions, objections, weak platform fit,
   overlooked angles, missing pillars, or repeatable series opportunities?
 */
 
-async function main() {
+export function parseEvaluationOptions(argv: string[]): EvaluationOptions {
+  let write = false;
+  let format: EvaluationFormat = "markdown";
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+
+    if (arg === "--write") {
+      write = true;
+      continue;
+    }
+
+    if (arg === "--json") {
+      format = "json";
+      continue;
+    }
+
+    if (arg === "--format") {
+      const nextValue = argv[index + 1];
+      if (nextValue !== "markdown" && nextValue !== "json") {
+        throw new Error(
+          "Expected --format to be followed by markdown or json.",
+        );
+      }
+
+      format = nextValue;
+      index += 1;
+      continue;
+    }
+
+    if (arg.startsWith("--format=")) {
+      const value = arg.split("=", 2)[1];
+      if (value !== "markdown" && value !== "json") {
+        throw new Error(
+          "Expected --format=markdown or --format=json.",
+        );
+      }
+
+      format = value;
+    }
+  }
+
+  return { write, format };
+}
+
+export function buildEvaluationArtifact(
+  fixture: EvaluationFixture,
+  growthPack: CreatorGrowthPack,
+  timestamp: string,
+): EvaluationArtifact {
+  return {
+    fixtureName: fixture.name,
+    timestamp,
+    modelUsed: growthPack.meta.model,
+    usedMockData: growthPack.meta.usedMockData,
+    input: {
+      creatorNiche: fixture.creatorNiche,
+      targetAudience: fixture.targetAudience,
+      targetPlatform: fixture.targetPlatform,
+      transcript: fixture.transcript,
+    },
+    rubric: rubricHeadings.map((heading) => ({
+      heading,
+      score: "",
+      notes: "",
+    })),
+    growthPack,
+  };
+}
+
+export function formatEvaluationMarkdown(artifact: EvaluationArtifact): string {
+  const lines = [
+    `# ${artifact.fixtureName}`,
+    "",
+    `- Timestamp: ${artifact.timestamp}`,
+    `- Model used: ${artifact.modelUsed}`,
+    `- Mock data used: ${artifact.usedMockData ? "yes" : "no"}`,
+    `- Creator niche: ${artifact.input.creatorNiche}`,
+    `- Target audience: ${artifact.input.targetAudience}`,
+    `- Target platform: ${artifact.input.targetPlatform}`,
+    "",
+    "## Transcript",
+    "",
+    artifact.input.transcript,
+    "",
+    "## Rubric",
+    "",
+    ...artifact.rubric.flatMap((item) => [
+      `### ${item.heading}`,
+      `- Score: ${item.score}`,
+      `- Notes: ${item.notes}`,
+      "",
+    ]),
+    "## Growth Pack",
+    "",
+    "```json",
+    JSON.stringify(artifact.growthPack, null, 2),
+    "```",
+    "",
+  ];
+
+  return lines.join("\n");
+}
+
+export function formatEvaluationJson(artifact: EvaluationArtifact): string {
+  return JSON.stringify(artifact, null, 2);
+}
+
+export async function runEvaluations(options: EvaluationOptions): Promise<void> {
+  loadEnvConfig(process.cwd());
+
   if (!process.env.OPENAI_API_KEY) {
     console.warn(
       "OPENAI_API_KEY is missing. Evaluations will use mock output, which is useful for shape checks but not prompt-quality review.",
     );
   }
 
+  const timestamp = new Date().toISOString();
+  const outputDirectory = path.join(process.cwd(), "evaluations");
+
+  if (options.write) {
+    await mkdir(outputDirectory, { recursive: true });
+  }
+
   for (const fixture of evaluationFixtures) {
-    console.log(`\n## ${fixture.name}`);
+    let growthPack: CreatorGrowthPack;
+
+    try {
+      growthPack = await generateCreatorGrowthPack(fixture);
+    } catch (error) {
+      console.warn(
+        `Live evaluation failed for "${fixture.name}". Falling back to deterministic mock output.`,
+      );
+      console.warn(error instanceof Error ? error.message : String(error));
+      growthPack = createMockGrowthPack(fixture);
+    }
+
+    const artifact = buildEvaluationArtifact(fixture, growthPack, timestamp);
+
+    console.log(`\n## ${artifact.fixtureName}`);
     console.log(
-      JSON.stringify(
-        {
-          niche: fixture.creatorNiche,
-          targetAudience: fixture.targetAudience,
-          targetPlatform: fixture.targetPlatform,
-        },
-        null,
-        2,
-      ),
+      `- Model used: ${artifact.modelUsed} | Mock data: ${artifact.usedMockData ? "yes" : "no"}`,
     );
+    console.log(`- Target platform: ${artifact.input.targetPlatform}`);
 
-    const growthPack = await generateCreatorGrowthPack(fixture);
+    for (const rubricItem of artifact.rubric) {
+      console.log(`### ${rubricItem.heading}`);
+      console.log("- Score: ");
+      console.log("- Notes: ");
+    }
 
-    console.log(JSON.stringify(growthPack, null, 2));
+    console.log("### Growth Pack");
+    console.log(JSON.stringify(artifact.growthPack, null, 2));
+
+    if (!options.write) {
+      continue;
+    }
+
+    const slug = fixture.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    const fileStem = `${timestamp.replace(/[:.]/g, "-")}-${slug}`;
+    const filePath = path.join(
+      outputDirectory,
+      `${fileStem}.${options.format === "json" ? "json" : "md"}`,
+    );
+    const content =
+      options.format === "json"
+        ? formatEvaluationJson(artifact)
+        : formatEvaluationMarkdown(artifact);
+
+    await writeFile(filePath, content, "utf8");
+    console.log(`- Wrote ${path.relative(process.cwd(), filePath)}`);
   }
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+async function main() {
+  const options = parseEvaluationOptions(process.argv.slice(2));
+  await runEvaluations(options);
+}
+
+const isMainModule = process.argv[1]
+  ? path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+  : false;
+
+if (isMainModule) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

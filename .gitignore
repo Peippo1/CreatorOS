@@ -18,6 +18,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# prompt eval artifacts
+/evaluations/*
+!/evaluations/.gitkeep
+
 # env
 .env*
 !.env.example
