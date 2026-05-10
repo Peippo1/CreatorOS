@@ -38,6 +38,87 @@ The product is not positioned as a generic content generator. The agents separat
 
 See [docs/architecture.md](docs/architecture.md) for the agent flow, file structure, extension points, and backend migration notes.
 
+### User Request Flow
+
+```text
+Browser (app/generate/page.tsx)
+  |
+  | POST /api/generate
+  v
+app/api/generate/route.ts
+  |-- validate input (Zod schema, character limits)
+  |-- apply rate limit (10 req / 10 min per IP)
+  v
+lib/orchestration/generate-growth-pack.ts
+  |-- OPENAI_API_KEY present? ──No──> lib/orchestration/mock-growth-pack.ts
+  |                                         |
+  |                                         v
+  |                                   deterministic mock
+  |                                   (niche + platform aware)
+  |
+  Yes
+  |
+  v
+lib/agents/ (three sequential agents)
+  |
+  v
+CreatorGrowthPack (Zod-validated JSON)
+  |
+  v
+Browser (components/growth-pack-output.tsx)
+```
+
+### Agent Orchestration Flow
+
+```text
+GenerateInput
+{ transcript, creatorNiche, targetPlatform, targetAudience }
+  |
+  v
+Audience Intelligence Agent (lib/agents/audience-intelligence.ts)
+  prompt: lib/prompts/audience-intelligence.ts
+  output: audienceInsights[]
+  |
+  v
+Content Strategy Agent (lib/agents/content-strategy.ts)
+  prompt: lib/prompts/content-strategy.ts
+  input: GenerateInput + audienceInsights
+  output: contentGaps[], viralHooks[], titles[], shortFormIdeas[]
+  |
+  v
+Strategic Repurposing Agent (lib/agents/repurposing.ts)
+  prompt: lib/prompts/repurposing.ts
+  input: GenerateInput + audienceInsights + contentGaps
+  output: repurposedContent[], growthExperiments[]
+  |
+  v
+CreatorGrowthPack
+{ audienceInsights, contentGaps, viralHooks, titles,
+  shortFormIdeas, repurposedContent, growthExperiments, meta }
+```
+
+### Testing and Evaluation Flow
+
+```text
+Unit Tests (npm run test)
+  |-- tests/generation-schema.test.ts   schema shape and Zod validation
+  |-- tests/growth-pack.test.ts         mock + live orchestration behavior
+  |-- tests/mock-growth-pack.test.ts    niche/platform variation in mock output
+  |-- tests/generate-route.test.ts      API route: validation, rate limit, mock key
+  |
+  No live API calls. All tests use fixtures in tests/fixtures.ts.
+
+Prompt Evaluation (npm run eval:prompts)
+  |
+  |-- With OPENAI_API_KEY set
+  |     -> runs live agents against 3 built-in creator fixtures
+  |     -> prints full CreatorGrowthPack JSON per fixture
+  |     -> use to judge specificity, strategy quality, platform fit
+  |
+  `-- Without OPENAI_API_KEY
+        -> runs mock path (shape checks only, not prompt quality)
+```
+
 ## Setup
 
 Install dependencies:
@@ -78,7 +159,7 @@ OPENAI_MODEL=gpt-5.5
 
 The code prefers `OPENAI_MODEL` when provided. If no model is configured, it uses the documented fallback constant `gpt-5.2`. If a configured model is unavailable or inaccessible to the API key, the OpenAI wrapper retries once with `gpt-5.2`. Other API failures are surfaced to the UI.
 
-If `OPENAI_API_KEY` is missing, CreatorOS returns deterministic mock output so the product workflow can be demonstrated locally.
+If `OPENAI_API_KEY` is missing, CreatorOS returns deterministic mock output so the product workflow can be demonstrated locally. The fallback is template-driven and keyed to the creator niche, target platform, target audience, and transcript, so demos feel specific without pretending to be live model output. It is useful for demos and contract checks but should not be read as live model quality.
 
 ## Public Route Limits
 
@@ -122,7 +203,7 @@ Run local prompt evaluations with:
 npm run eval:prompts
 ```
 
-The evaluator runs three realistic creator fixtures through the orchestration pipeline and prints structured Growth Pack output. With `OPENAI_API_KEY` configured, it exercises the live agent prompts. Without a key, it uses the deterministic mock path, which is useful for shape checks but not prompt-quality review.
+The evaluator runs three realistic creator fixtures through the orchestration pipeline and prints structured Growth Pack output. With `OPENAI_API_KEY` configured, it exercises the live agent prompts. Without a key, it uses the deterministic mock path, which is useful for shape checks but not prompt-quality review. That fallback is deterministic and fixture-aware, so it is good for demos and regression checks, not for judging live model quality.
 
 When iterating on prompts, keep changes narrow and compare outputs against:
 

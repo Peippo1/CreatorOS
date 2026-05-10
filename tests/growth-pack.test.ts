@@ -3,11 +3,21 @@ import { afterEach, describe, expect, it } from "vitest";
 import { generateCreatorGrowthPack } from "@/lib/orchestration/generate-growth-pack";
 import { createMockGrowthPack } from "@/lib/orchestration/mock-growth-pack";
 import { creatorGrowthPackSchema } from "@/lib/types/generation";
-import { validGenerateInput } from "./fixtures";
+import {
+  educationalYoutubeFixture,
+  fitnessFixture,
+  technicalFounderFixture,
+  validGenerateInput,
+} from "./fixtures";
 
 const originalOpenAIKey = process.env.OPENAI_API_KEY;
 
 afterEach(() => {
+  if (originalOpenAIKey === undefined) {
+    delete process.env.OPENAI_API_KEY;
+    return;
+  }
+
   process.env.OPENAI_API_KEY = originalOpenAIKey;
 });
 
@@ -31,6 +41,35 @@ describe("mock Creator Growth Pack", () => {
       }),
     );
   });
+
+  it.each([
+    [
+      "technical founder",
+      technicalFounderFixture,
+      /production readiness|incident prevention/i,
+      /LinkedIn/i,
+    ],
+    ["fitness creator", fitnessFixture, /restart friction|week one/i, /Instagram/i],
+    [
+      "educational youtube creator",
+      educationalYoutubeFixture,
+      /consequence-first|retention pressure/i,
+      /YouTube Shorts/i,
+    ],
+  ])(
+    "varies the fallback output for %s",
+    (_label, input, expectedSignal, expectedPlatform) => {
+      const growthPack = createMockGrowthPack(input);
+      const combined = JSON.stringify(growthPack);
+
+      expect(combined).toMatch(expectedSignal);
+      expect(combined).toMatch(expectedPlatform);
+      expect(growthPack.contentGaps[0].suggestedExperiment).toContain(
+        input.targetPlatform,
+      );
+      expect(creatorGrowthPackSchema.safeParse(growthPack).success).toBe(true);
+    },
+  );
 });
 
 describe("generateCreatorGrowthPack", () => {
