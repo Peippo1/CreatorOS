@@ -215,6 +215,33 @@ When iterating on prompts, keep changes narrow and compare outputs against:
 - Experiment quality
 - Content gap quality
 
+## Mobile
+
+CreatorOS ships as a Progressive Web App (PWA) and can be installed directly from a mobile browser — no App Store required.
+
+**iOS (Safari):** Open the app, tap Share, then "Add to Home Screen."
+
+**Android (Chrome):** Open the app, tap the install prompt or Menu → "Add to Home Screen."
+
+The PWA manifest sets `start_url` to `/generate`, so the app opens directly to the workspace. It runs in `standalone` display mode (no browser chrome) with a black theme color that respects iOS status bar transparency.
+
+### Icons
+
+App icons are generated at build time using Next.js `ImageResponse` (`app/icon.tsx` → 32px favicon, `app/apple-icon.tsx` → 180px Apple touch icon). The SVG source at `public/icons/icon.svg` is used in the manifest for scalable sizes. Replace these with production-quality assets before launch.
+
+### Future native options
+
+The app is intentionally web-first. If native apps become necessary:
+
+| Option | Best for |
+| --- | --- |
+| **React Native + Expo** | Cross-platform iOS + Android from a shared TypeScript codebase. Recommended if the UI needs native gesture performance, camera, or media access. |
+| **Capacitor** | Wraps the existing Next.js web app as a native shell with minimal code changes. Good bridge option before committing to a full native build. |
+| **Swift / SwiftUI** | Deep iOS integration: widgets, Shortcuts, Share Sheet. Requires a separate codebase. |
+| **Kotlin / Jetpack Compose** | Deep Android integration. Requires a separate codebase. |
+
+For the current MVP the PWA path covers installation and home screen presence without native code. A service worker can be added later to enable full offline support.
+
 ## Roadmap
 
 - Analytics Agent
@@ -225,3 +252,4 @@ When iterating on prompts, keep changes narrow and compare outputs against:
 - Social integrations
 - FastAPI backend migration
 - OpenAI Agents SDK integration
+- Service worker for offline support

@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2Icon, SparklesIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { GrowthPackOutput } from "@/components/growth-pack-output";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -60,6 +60,15 @@ export function GenerateWorkspace() {
   const [growthPack, setGrowthPack] = useState<CreatorGrowthPack | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const outputRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!growthPack || !outputRef.current) return;
+    const rect = outputRef.current.getBoundingClientRect();
+    if (rect.top > window.innerHeight * 0.4) {
+      outputRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [growthPack]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -177,7 +186,7 @@ export function GenerateWorkspace() {
               </Alert>
             ) : null}
 
-            <Button type="submit" size="lg" disabled={isLoading}>
+            <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <Loader2Icon data-icon="inline-start" className="animate-spin" />
               ) : (
@@ -189,13 +198,13 @@ export function GenerateWorkspace() {
         </CardContent>
       </Card>
 
-      <div className="min-h-[42rem]">
+      <div ref={outputRef} className="scroll-mt-6">
         {isLoading ? <GrowthPackSkeleton /> : null}
         {!isLoading && growthPack ? (
           <GrowthPackOutput growthPack={growthPack} />
         ) : null}
         {!isLoading && !growthPack ? (
-          <Card className="min-h-[42rem] justify-center border-dashed bg-card/70">
+          <Card className="min-h-48 justify-center border-dashed bg-card/70 sm:min-h-[42rem]">
             <CardContent className="flex flex-col items-center gap-4 text-center">
               <div className="flex size-12 items-center justify-center rounded-md border bg-background">
                 <SparklesIcon className="size-5" />
@@ -218,7 +227,7 @@ export function GenerateWorkspace() {
 
 function GrowthPackSkeleton() {
   return (
-    <Card className="min-h-[42rem]">
+    <Card className="min-h-64 sm:min-h-[42rem]">
       <CardHeader>
         <Skeleton className="h-6 w-56" />
         <Skeleton className="h-4 w-72" />

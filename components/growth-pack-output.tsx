@@ -1,14 +1,21 @@
+"use client";
+
 import {
   BeakerIcon,
+  CheckIcon,
   ClapperboardIcon,
   CompassIcon,
+  CopyIcon,
+  DownloadIcon,
   LightbulbIcon,
   MessageSquareQuoteIcon,
   PenLineIcon,
   UsersIcon,
 } from "lucide-react";
+import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import type { CreatorGrowthPack } from "@/lib/types/generation";
 
 type GrowthPackOutputProps = {
@@ -37,6 +45,10 @@ export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
           <Badge variant={growthPack.meta.usedMockData ? "secondary" : "outline"}>
             {growthPack.meta.usedMockData ? "Mock output" : growthPack.meta.model}
           </Badge>
+        </div>
+        <div className="flex flex-wrap gap-2 pt-1">
+          <CopyAllButton growthPack={growthPack} />
+          <ExportMarkdownButton growthPack={growthPack} />
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -91,6 +103,90 @@ export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
   );
 }
 
+function CopyButton({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard API unavailable — silently skip
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      title={copied ? "Copied!" : "Copy to clipboard"}
+      aria-label={copied ? "Copied!" : "Copy to clipboard"}
+      className={cn(
+        "inline-flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+        className,
+      )}
+    >
+      {copied ? (
+        <CheckIcon className="size-3.5" />
+      ) : (
+        <CopyIcon className="size-3.5" />
+      )}
+    </button>
+  );
+}
+
+function CopyAllButton({ growthPack }: { growthPack: CreatorGrowthPack }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(formatAsMarkdown(growthPack));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard API unavailable
+    }
+  }
+
+  return (
+    <Button type="button" variant="outline" size="sm" onClick={handleCopy}>
+      {copied ? (
+        <CheckIcon data-icon="inline-start" />
+      ) : (
+        <CopyIcon data-icon="inline-start" />
+      )}
+      {copied ? "Copied!" : "Copy all"}
+    </Button>
+  );
+}
+
+function ExportMarkdownButton({ growthPack }: { growthPack: CreatorGrowthPack }) {
+  function handleExport() {
+    const md = formatAsMarkdown(growthPack);
+    const blob = new Blob([md], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "creator-growth-pack.md";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <Button type="button" variant="outline" size="sm" onClick={handleExport}>
+      <DownloadIcon data-icon="inline-start" />
+      Export .md
+    </Button>
+  );
+}
+
 function ListSection({
   title,
   icon: Icon,
@@ -102,11 +198,14 @@ function ListSection({
 }) {
   return (
     <section className="rounded-lg border bg-background p-4">
-      <div className="mb-4 flex items-center gap-2">
-        <div className="flex size-8 items-center justify-center rounded-md border bg-card">
-          <Icon className="size-4" />
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex size-8 items-center justify-center rounded-md border bg-card">
+            <Icon className="size-4" />
+          </div>
+          <h3 className="text-sm font-semibold">{title}</h3>
         </div>
-        <h3 className="text-sm font-semibold">{title}</h3>
+        <CopyButton text={items.map((item) => `- ${item}`).join("\n")} />
       </div>
       <ul className="flex flex-col gap-3">
         {items.map((item) => (
@@ -133,13 +232,22 @@ function StructuredSection({
     description?: string;
   }>;
 }) {
+  const sectionText = items
+    .map((item) =>
+      [item.label, item.title, item.description].filter(Boolean).join("\n"),
+    )
+    .join("\n\n");
+
   return (
     <section className="rounded-lg border bg-background p-4">
-      <div className="mb-4 flex items-center gap-2">
-        <div className="flex size-8 items-center justify-center rounded-md border bg-card">
-          <Icon className="size-4" />
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex size-8 items-center justify-center rounded-md border bg-card">
+            <Icon className="size-4" />
+          </div>
+          <h3 className="text-sm font-semibold">{title}</h3>
         </div>
-        <h3 className="text-sm font-semibold">{title}</h3>
+        <CopyButton text={sectionText} />
       </div>
       <div className="grid grid-cols-1 gap-3">
         {items.map((item) => (
@@ -161,4 +269,57 @@ function StructuredSection({
       </div>
     </section>
   );
+}
+
+function formatAsMarkdown(pack: CreatorGrowthPack): string {
+  const lines: string[] = ["# Creator Growth Pack", ""];
+
+  lines.push("## Audience Insights", "");
+  for (const insight of pack.audienceInsights) {
+    lines.push(`- ${insight}`);
+  }
+  lines.push("");
+
+  lines.push("## Content Gaps", "");
+  for (const gap of pack.contentGaps) {
+    lines.push(`### ${gap.gap}`, "");
+    lines.push(`**Why it matters:** ${gap.whyItMatters}`, "");
+    lines.push(`**Suggested experiment:** ${gap.suggestedExperiment}`, "");
+  }
+
+  lines.push("## Hook Hypotheses", "");
+  for (const hook of pack.viralHooks) {
+    lines.push(`- ${hook}`);
+  }
+  lines.push("");
+
+  lines.push("## Strategic Titles", "");
+  for (const title of pack.titles) {
+    lines.push(`- ${title}`);
+  }
+  lines.push("");
+
+  lines.push("## Platform Angles", "");
+  for (const idea of pack.shortFormIdeas) {
+    lines.push(`### ${idea.format}`, "");
+    lines.push(idea.idea, "");
+    lines.push(`*${idea.angle}*`, "");
+  }
+
+  lines.push("## Strategic Repurposing", "");
+  for (const content of pack.repurposedContent) {
+    lines.push(`### ${content.format}`, "");
+    lines.push(content.content, "");
+  }
+
+  lines.push("## Growth Experiments", "");
+  for (const exp of pack.growthExperiments) {
+    lines.push(`- ${exp}`);
+  }
+  lines.push("");
+
+  const modelLabel = pack.meta.usedMockData ? "Mock output" : pack.meta.model;
+  lines.push("---", `*Generated by CreatorOS · ${modelLabel}*`);
+
+  return lines.join("\n");
 }
