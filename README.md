@@ -33,6 +33,7 @@ CreatorOS is intentionally lean:
 - Zod schemas for request and agent output typing
 - Explicit orchestration in `lib/orchestration`
 - Mock output when `OPENAI_API_KEY` is missing
+- A 60-second end-to-end generation deadline with request cancellation
 
 The product is not positioned as a generic content generator. The agents separate diagnosis, strategy, content gap discovery, and production so each output has a specific audience rationale and a testable growth purpose.
 
@@ -170,6 +171,10 @@ If `OPENAI_API_KEY` is missing, CreatorOS returns deterministic mock output so t
 - Target audience: 2 to 160 characters
 - Target platform: one of the supported platform values in the app selector
 - Rate limit: 10 requests per 10 minutes per IP
+
+Generation responses use `Cache-Control: no-store` because they can contain creator-provided material. Provider failures are mapped to safe retry messages; CreatorOS does not return raw provider error details to the browser. Each operational failure includes a request ID for support and debugging, while logs record only that ID and the response category.
+
+Creator-provided fields and source material are formatted as untrusted reference data before reaching an agent. The agent instructions explicitly say not to follow instructions embedded in that data.
 
 The rate limiter is in-memory and uses `x-forwarded-for`, then `x-real-ip`, then `unknown`. It is suitable for local development and single-instance deployments only. Multi-instance or serverless production deployments should replace it with a shared store or platform rate-limit feature.
 

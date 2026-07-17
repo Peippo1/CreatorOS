@@ -3,6 +3,7 @@ import type {
   ContentStrategy,
   GenerateInput,
 } from "@/lib/types/generation";
+import { formatPromptContext, getCreatorContext } from "@/lib/prompts/context";
 
 export function buildRepurposingPrompt(
   input: GenerateInput,
@@ -14,19 +15,11 @@ export function buildRepurposingPrompt(
 Transform the source transcript and strategy into platform-aware assets that preserve the strategic rationale.
 This is strategic repurposing, not a volume-based content generator.
 
-Creator niche: ${input.creatorNiche}
-Target platform: ${input.targetPlatform}
-Target audience: ${input.targetAudience}
-Positioning: ${strategy.positioning}
-Content gaps: ${strategy.contentGaps
-    .map((contentGap) => `${contentGap.gap}: ${contentGap.whyItMatters}`)
-    .join(" | ")}
-Content pillars: ${strategy.contentPillars.join(" | ")}
-Best audience language: ${audience.languageSignals.join(" | ")}
+${formatPromptContext({ creator: getCreatorContext(input), audience, strategy })}
 
 Rules:
 - Preserve the creator's core ideas.
-- Make outputs immediately usable on or around ${input.targetPlatform}.
+- Make outputs immediately usable on or around the selected target platform.
 - Keep short-form ideas concrete enough to produce and tied to a clear audience tension.
 - Repurposed content should address different content gaps, not minor rewrites.
 - Include why the asset should resonate when the schema field allows it.

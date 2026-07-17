@@ -49,8 +49,14 @@ lib/
 - Request caps are intentionally small: 20,000 characters for transcript, 120 for creator niche, and 160 for target audience.
 - Target platform must match the supported enum values.
 - A small in-memory limiter allows 10 requests per 10 minutes per IP and returns `429` with `Retry-After` when exceeded.
+- Responses are marked `Cache-Control: no-store` because inputs and outputs can contain creator material.
+- Provider failures and deadline failures are translated into safe `502` and `504` responses with a request ID; raw provider messages are not returned to the browser.
 
 The limiter reads the first `x-forwarded-for` IP, then `x-real-ip`, then falls back to `unknown`. Because state is process-local, this is appropriate only for development and single-instance deployments. A multi-instance or serverless production deployment should move rate limiting to a shared store, gateway, or hosting-platform control.
+
+## Generation Safety
+
+The orchestration module applies one 60-second deadline across the sequential agent flow and passes its cancellation signal to every OpenAI request. Retries stop once that signal is aborted. Prompt builders format creator input, source material, and upstream agent output as untrusted JSON context and direct each agent to treat it as data rather than instructions.
 
 ## Extension Points
 

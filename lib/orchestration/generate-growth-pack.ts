@@ -2,6 +2,7 @@ import { runAudienceIntelligenceAgent } from "@/lib/agents/audience-intelligence
 import { runContentStrategyAgent } from "@/lib/agents/content-strategy";
 import { runRepurposingAgent } from "@/lib/agents/repurposing";
 import { hasOpenAIKey } from "@/lib/openai/config";
+import { runWithGenerationDeadline } from "@/lib/orchestration/generation-deadline";
 import { createMockGrowthPack } from "@/lib/orchestration/mock-growth-pack";
 import {
   generateInputSchema,
@@ -11,6 +12,7 @@ import {
 
 export async function generateCreatorGrowthPack(
   rawInput: unknown,
+  options: { signal?: AbortSignal; timeoutMs?: number } = {},
 ): Promise<CreatorGrowthPack> {
   const input = generateInputSchema.parse(rawInput);
 
@@ -18,20 +20,26 @@ export async function generateCreatorGrowthPack(
     return createMockGrowthPack(input);
   }
 
-  return runAgentFlow(input);
+  return runWithGenerationDeadline(
+    (signal) => runAgentFlow(input, signal),
+    options,
+  );
 }
 
-async function runAgentFlow(input: GenerateInput): Promise<CreatorGrowthPack> {
-  const audience = await runAudienceIntelligenceAgent(input);
+async function runAgentFlow(
+  input: GenerateInput,
+  signal: AbortSignal,
+): Promise<CreatorGrowthPack> {
+  const audience = await runAudienceIntelligenceAgent(input, { signal });
   const strategy = await runContentStrategyAgent({
     input,
     audience: audience.output,
-  });
+  }, { signal });
   const repurposing = await runRepurposingAgent({
     input,
     audience: audience.output,
     strategy: strategy.output,
-  });
+  }, { signal });
 
   return {
     audienceInsights: audience.output.audienceInsights,

@@ -1,5 +1,6 @@
 import { createStructuredResponse } from "@/lib/openai/client";
 import { buildAudienceIntelligencePrompt } from "@/lib/prompts/audience-intelligence";
+import { formatPromptContext } from "@/lib/prompts/context";
 import {
   audienceIntelligenceSchema,
   type AudienceIntelligence,
@@ -8,12 +9,14 @@ import {
 
 export async function runAudienceIntelligenceAgent(
   input: GenerateInput,
+  { signal }: { signal?: AbortSignal } = {},
 ): Promise<{ output: AudienceIntelligence; model: string }> {
   const response = await createStructuredResponse({
     schema: audienceIntelligenceSchema,
     schemaName: "audience_intelligence",
     instructions: buildAudienceIntelligencePrompt(input),
-    input: input.transcript,
+    input: formatPromptContext({ transcript: input.transcript }),
+    signal,
   });
 
   return {

@@ -3,6 +3,7 @@ import { zodTextFormat } from "openai/helpers/zod";
 import type { z } from "zod";
 
 import { DEFAULT_OPENAI_MODEL, hasOpenAIKey, resolveOpenAIModel } from "./config";
+import { UpstreamGenerationError } from "@/lib/generation/errors";
 import {
   getErrorMessage,
   isModelAvailabilityError,
@@ -32,6 +33,7 @@ type StructuredResponseParams<TSchema extends z.ZodType> = {
   schemaName: string;
   instructions: string;
   input: string;
+  signal?: AbortSignal;
 };
 
 export async function createStructuredResponse<TSchema extends z.ZodType>({
@@ -39,6 +41,7 @@ export async function createStructuredResponse<TSchema extends z.ZodType>({
   schemaName,
   instructions,
   input,
+  signal,
 }: StructuredResponseParams<TSchema>): Promise<{
   data: z.infer<TSchema>;
   model: string;
@@ -52,19 +55,25 @@ export async function createStructuredResponse<TSchema extends z.ZodType>({
       instructions,
       input,
       model: preferredModel,
+      signal,
     });
   } catch (error) {
     if (
       preferredModel !== DEFAULT_OPENAI_MODEL &&
       isModelAvailabilityError(error)
     ) {
-      return requestWithRetries({
-        schema,
-        schemaName,
-        instructions,
-        input,
-        model: DEFAULT_OPENAI_MODEL,
-      });
+      try {
+        return await requestWithRetries({
+          schema,
+          schemaName,
+          instructions,
+          input,
+          model: DEFAULT_OPENAI_MODEL,
+          signal,
+        });
+      } catch (fallbackError) {
+        throw normalizeOpenAIError(fallbackError);
+      }
     }
 
     throw normalizeOpenAIError(error);
@@ -77,6 +86,7 @@ async function requestWithRetries<TSchema extends z.ZodType>({
   instructions,
   input,
   model,
+  signal,
 }: StructuredResponseParams<TSchema> & { model: string }): Promise<{
   data: z.infer<TSchema>;
   model: string;
@@ -85,6 +95,10 @@ async function requestWithRetries<TSchema extends z.ZodType>({
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
     try {
+      if (signal?.aborted) {
+        throw signal.reason;
+      }
+
       const response = await getOpenAIClient().responses.parse({
         model,
         instructions,
@@ -92,7 +106,7 @@ async function requestWithRetries<TSchema extends z.ZodType>({
         text: {
           format: zodTextFormat(schema, schemaName),
         },
-      });
+      }, { maxRetries: 0, signal });
 
       if (!response.output_parsed) {
         throw new OpenAIResponseError(
@@ -107,7 +121,11 @@ async function requestWithRetries<TSchema extends z.ZodType>({
     } catch (error) {
       lastError = error;
 
-      if (!isRetryableOpenAIError(error) || attempt === MAX_RETRIES) {
+      if (
+        signal?.aborted ||
+        !isRetryableOpenAIError(error) ||
+        attempt === MAX_RETRIES
+      ) {
         break;
       }
 
@@ -123,11 +141,7 @@ function normalizeOpenAIError(error: unknown) {
     return error;
   }
 
-  if (error instanceof OpenAIResponseError) {
-    return error;
-  }
-
-  return new OpenAIResponseError(getErrorMessage(error));
+  return new UpstreamGenerationError(getErrorMessage(error));
 }
 
 function wait(ms: number) {
