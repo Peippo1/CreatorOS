@@ -1,5 +1,6 @@
 import { createStructuredResponse } from "@/lib/openai/client";
 import { buildRepurposingPrompt } from "@/lib/prompts/repurposing";
+import { formatPromptContext } from "@/lib/prompts/context";
 import {
   repurposingSchema,
   type AudienceIntelligence,
@@ -16,12 +17,16 @@ export async function runRepurposingAgent({
   input: GenerateInput;
   audience: AudienceIntelligence;
   strategy: ContentStrategy;
-}): Promise<{ output: RepurposingOutput; model: string }> {
+}, { signal }: { signal?: AbortSignal } = {}): Promise<{
+  output: RepurposingOutput;
+  model: string;
+}> {
   const response = await createStructuredResponse({
     schema: repurposingSchema,
     schemaName: "repurposing",
     instructions: buildRepurposingPrompt(input, audience, strategy),
-    input: input.transcript,
+    input: formatPromptContext({ transcript: input.transcript }),
+    signal,
   });
 
   return {

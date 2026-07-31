@@ -2,14 +2,17 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 import { checkGenerateRateLimit } from "@/app/api/generate/rate-limit";
+import { getPublicGenerationError } from "@/lib/generation/errors";
 import { generateCreatorGrowthPack } from "@/lib/orchestration/generate-growth-pack";
 
 export async function POST(request: Request) {
+  const requestId = crypto.randomUUID();
+
   try {
     const rateLimit = checkGenerateRateLimit(request);
 
     if (!rateLimit.allowed) {
-      return NextResponse.json(
+      return jsonResponse(
         { error: "Too many requests. Please retry later." },
         {
           status: 429,
@@ -21,19 +24,21 @@ export async function POST(request: Request) {
     }
 
     const body = await parseRequestJson(request);
-    const growthPack = await generateCreatorGrowthPack(body);
+    const growthPack = await generateCreatorGrowthPack(body, {
+      signal: request.signal,
+    });
 
-    return NextResponse.json({ growthPack });
+    return jsonResponse({ growthPack }, { headers: { "X-Request-ID": requestId } });
   } catch (error) {
     if (error instanceof MalformedJsonError) {
-      return NextResponse.json(
+      return jsonResponse(
         { error: "Malformed JSON request." },
         { status: 400 },
       );
     }
 
     if (error instanceof ZodError) {
-      return NextResponse.json(
+      return jsonResponse(
         {
           error: error.issues[0]?.message ?? "Invalid generation request.",
         },
@@ -41,13 +46,31 @@ export async function POST(request: Request) {
       );
     }
 
-    const message =
-      error instanceof Error
-        ? error.message
-        : "CreatorOS could not generate a growth pack.";
+    const publicError = getPublicGenerationError(error);
 
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("CreatorOS generation failed", {
+      requestId,
+      status: publicError.status,
+    });
+
+    return jsonResponse(
+      { error: publicError.message, requestId },
+      {
+        status: publicError.status,
+        headers: { "X-Request-ID": requestId },
+      },
+    );
   }
+}
+
+function jsonResponse(
+  body: Record<string, unknown>,
+  init: ResponseInit = {},
+) {
+  const headers = new Headers(init.headers);
+  headers.set("Cache-Control", "no-store");
+
+  return NextResponse.json(body, { ...init, headers });
 }
 
 class MalformedJsonError extends Error {

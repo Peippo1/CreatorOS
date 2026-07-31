@@ -1,5 +1,6 @@
 import { createStructuredResponse } from "@/lib/openai/client";
 import { buildContentStrategyPrompt } from "@/lib/prompts/content-strategy";
+import { formatPromptContext } from "@/lib/prompts/context";
 import {
   contentStrategySchema,
   type AudienceIntelligence,
@@ -13,12 +14,16 @@ export async function runContentStrategyAgent({
 }: {
   input: GenerateInput;
   audience: AudienceIntelligence;
-}): Promise<{ output: ContentStrategy; model: string }> {
+}, { signal }: { signal?: AbortSignal } = {}): Promise<{
+  output: ContentStrategy;
+  model: string;
+}> {
   const response = await createStructuredResponse({
     schema: contentStrategySchema,
     schemaName: "content_strategy",
     instructions: buildContentStrategyPrompt(input, audience),
-    input: input.transcript,
+    input: formatPromptContext({ transcript: input.transcript }),
+    signal,
   });
 
   return {
