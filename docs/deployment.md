@@ -39,11 +39,11 @@ secrets only.
 
 ## Abuse protection
 
-The route keeps a small process-local limiter for development and single
-instances. Vercel production must also enable project-level deployment
-protection and a platform/WAF rate-limit rule for `POST /api/generate` before
-inviting beta users. The repository does not add a third-party shared limiter
-in the stateless beta.
+When Supabase is configured, `POST /api/generate` uses the atomic
+`consume_generation_rate_limit` Postgres function. It stores only a SHA-256
+bucket key, never a raw IP address. Local demos retain an in-memory fallback.
+Also enable project-level deployment protection and a platform/WAF rule before
+inviting beta users.
 
 ## Rollback and monitoring
 
@@ -53,6 +53,8 @@ in the stateless beta.
   `vercel rollback`.
 - Check `/api/health`, generation success rate, timeout responses, and provider
   errors after each release.
+- Query `beta_events` for profile saves, source additions, experiment creation,
+  publishing, and reviewed experiments to measure activation and weekly return.
 
 ## Known beta limitations
 

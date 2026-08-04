@@ -3,11 +3,22 @@ create table if not exists public.source_documents (id uuid primary key default 
 alter table public.source_documents add column if not exists signals jsonb not null default '[]'::jsonb;
 create table if not exists public.content_experiments (id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade, source_document_id uuid references public.source_documents(id) on delete set null, title text not null, audience_segment text not null default '', audience_problem text not null default '', hook text not null default '', platform text not null, format text not null, cta text not null default '', intended_outcome text not null default '', hypothesis text not null default '', draft text not null default '', planned_publish_date date, variant_label text not null default 'Original', status text not null default 'idea', created_at timestamptz not null default now(), updated_at timestamptz not null default now());
 create table if not exists public.performance_snapshots (id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade, experiment_id uuid not null references public.content_experiments(id) on delete cascade, published_at date not null, views integer not null default 0, watch_time_minutes numeric, likes integer not null default 0, comments integer not null default 0, shares integer not null default 0, saves integer not null default 0, clicks integer not null default 0, signups integer not null default 0, revenue numeric not null default 0, qualified_leads integer not null default 0, created_at timestamptz not null default now());
+create table if not exists public.beta_events (id bigint generated always as identity primary key, user_id uuid not null references auth.users(id) on delete cascade, name text not null, occurred_at timestamptz not null default now());
+create table if not exists public.rate_limit_buckets (bucket_key text primary key, count integer not null, reset_at timestamptz not null);
+create or replace function public.consume_generation_rate_limit(bucket_key text, window_seconds integer, max_requests integer) returns table(allowed boolean, retry_after_seconds integer) language plpgsql security definer as $$
+declare current_count integer; current_reset timestamptz;
+begin
+  insert into public.rate_limit_buckets as bucket (bucket_key, count, reset_at) values ($1, 1, now() + make_interval(secs => $2)) on conflict (bucket_key) do update set count = case when bucket.reset_at <= now() then 1 else bucket.count + 1 end, reset_at = case when bucket.reset_at <= now() then now() + make_interval(secs => $2) else bucket.reset_at end returning count, reset_at into current_count, current_reset;
+  if current_count > $3 then update public.rate_limit_buckets set count = $3 where bucket_key = $1; return query select false, greatest(1, ceil(extract(epoch from current_reset - now()))::integer); else return query select true, 0; end if;
+end;
+$$;
 alter table public.creator_profiles enable row level security;
 alter table public.source_documents enable row level security;
 alter table public.content_experiments enable row level security;
 alter table public.performance_snapshots enable row level security;
+alter table public.beta_events enable row level security;
 create policy "owner profiles" on public.creator_profiles for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "owner sources" on public.source_documents for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "owner experiments" on public.content_experiments for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "owner metrics" on public.performance_snapshots for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "owner beta events" on public.beta_events for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

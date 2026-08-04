@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const requestId = crypto.randomUUID();
 
   try {
-    const rateLimit = checkGenerateRateLimit(request);
+    const rateLimit = await checkGenerateRateLimit(request);
 
     if (!rateLimit.allowed) {
       return jsonResponse(

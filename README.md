@@ -171,7 +171,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-Supabase is optional for local demos. Without the Supabase variables, CreatorOS uses a server-side demo store. For a real beta, run `supabase/schema.sql`, configure email magic links, and set the service-role key only as a server-side secret. Source material is never written to logs.
+Supabase is optional for local demos. Without the Supabase variables, CreatorOS uses a server-side demo store. For a real beta, run `supabase/schema.sql`, configure email magic links, and set the service-role key only as a server-side secret. Source material is never written to logs. The migration also installs a shared Postgres rate-limit function and beta event table.
 
 The code prefers `OPENAI_MODEL` when provided. If no model is configured, it uses the documented fallback constant `gpt-5.2`. If a configured model is unavailable or inaccessible to the API key, the OpenAI wrapper retries once with `gpt-5.2`. Other API failures are surfaced to the UI. Production fails closed when `OPENAI_API_KEY` is missing; set `CREATOROS_ALLOW_MOCK=true` only for local, non-production demos.
 
@@ -191,7 +191,7 @@ Generation responses use `Cache-Control: no-store` because they can contain crea
 
 Creator-provided fields and source material are formatted as untrusted reference data before reaching an agent. The agent instructions explicitly say not to follow instructions embedded in that data.
 
-The rate limiter is in-memory and uses `x-forwarded-for`, then `x-real-ip`, then `unknown`. It is suitable for local development and single-instance deployments only. Multi-instance or serverless production deployments should replace it with a shared store or platform rate-limit feature. CSV outcomes are accepted at `POST /api/performance/import`; `experiment_id` and `published_at` are required and duplicate experiment/date pairs are skipped.
+The rate limiter hashes `x-forwarded-for`, then `x-real-ip`, then `unknown`. With Supabase server credentials it uses a shared Postgres bucket, suitable for multi-instance deployments; local demos retain an in-memory fallback. CSV outcomes are accepted at `POST /api/performance/import`; `experiment_id` and `published_at` are required and duplicate experiment/date pairs are skipped. `GET /api/export` returns an account-scoped JSON export and `DELETE /api/sources/:id` removes source material.
 
 See [docs/deployment.md](docs/deployment.md) for the Vercel beta deployment, environment, protection, monitoring, and rollback checklist. Privacy and beta terms are available at [/privacy](/privacy) and [/terms](/terms).
 

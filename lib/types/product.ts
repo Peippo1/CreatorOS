@@ -30,6 +30,8 @@ export const audienceSignalSchema = z.object({
   confidence: z.enum(["low", "medium", "high"]),
 });
 
+export const betaEventNameSchema = z.enum(["profile_saved", "source_added", "experiment_created", "experiment_published", "weekly_review_completed"]);
+
 export const experimentCreateSchema = z.object({
   sourceDocumentId: z.string().uuid().nullable().optional(),
   title: z.string().trim().min(1).max(240),
@@ -65,6 +67,8 @@ export const performanceSchema = z.object({
 
 export type CreatorProfile = z.infer<typeof creatorProfileSchema>;
 export type AudienceSignal = z.infer<typeof audienceSignalSchema>;
+export type BetaEventName = z.infer<typeof betaEventNameSchema>;
+export type BetaEvent = { name: BetaEventName; occurredAt: string };
 export type SourceDocument = z.infer<typeof sourceDocumentSchema> & { id: string; createdAt: string; signals: AudienceSignal[] };
 export type ExperimentStatus = z.infer<typeof experimentStatusSchema>;
 export type ContentExperiment = z.infer<typeof experimentCreateSchema> & { id: string; status: ExperimentStatus; createdAt: string; updatedAt: string };
