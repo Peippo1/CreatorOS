@@ -13,9 +13,10 @@ CREATOROS_ALLOW_MOCK=false
 NEXT_PUBLIC_SUPABASE_URL=<Supabase project URL>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase anon key>
 SUPABASE_SERVICE_ROLE_KEY=<server-side Supabase service-role key>
+APP_ORIGIN=https://<production-domain>
 ```
 
-Run `supabase/schema.sql` before inviting beta users. Enable email magic-link authentication and add the deployed `/auth/callback` URL to Supabase Auth redirect URLs. Never expose the service-role key to the browser.
+Run `supabase/schema.sql` before inviting beta users. Enable email magic-link authentication, set Supabase's Site URL to `APP_ORIGIN`, and add `${APP_ORIGIN}/auth/callback` to its Auth redirect URLs. Never expose the service-role key to the browser.
 
 `OPENAI_API_KEY` is required in production. The application fails its readiness
 check and returns a safe configuration error rather than silently serving mock
