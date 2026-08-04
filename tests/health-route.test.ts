@@ -1,20 +1,19 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { GET } from "@/app/api/health/route";
 
 const originalOpenAIKey = process.env.OPENAI_API_KEY;
-const originalNodeEnv = process.env.NODE_ENV;
 
 afterEach(() => {
   if (originalOpenAIKey === undefined) delete process.env.OPENAI_API_KEY;
   else process.env.OPENAI_API_KEY = originalOpenAIKey;
-  process.env.NODE_ENV = originalNodeEnv;
+  vi.unstubAllEnvs();
 });
 
 describe("GET /api/health", () => {
   it("reports local readiness without an OpenAI key", async () => {
     delete process.env.OPENAI_API_KEY;
-    process.env.NODE_ENV = "test";
+    vi.stubEnv("NODE_ENV", "test");
 
     const response = GET();
 
@@ -28,7 +27,7 @@ describe("GET /api/health", () => {
 
   it("reports production as unavailable when the key is missing", async () => {
     delete process.env.OPENAI_API_KEY;
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
 
     const response = GET();
 

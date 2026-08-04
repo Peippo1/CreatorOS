@@ -20,7 +20,7 @@
     "class-variance-authority": "latest",
     "clsx": "latest",
     "lucide-react": "latest",
-    "next": "^16.3.0-preview.10",
+    "next": "16.3.0",
     "openai": "latest",
     "react": "latest",
     "react-dom": "latest",
@@ -28,7 +28,7 @@
     "zod": "latest"
   },
   "overrides": {
-    "postcss": "8.5.18"
+    "postcss": "8.5.23"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.0",

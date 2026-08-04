@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { generateCreatorGrowthPack } from "@/lib/orchestration/generate-growth-pack";
 import { createMockGrowthPack } from "@/lib/orchestration/mock-growth-pack";
@@ -11,7 +11,6 @@ import {
 } from "./fixtures";
 
 const originalOpenAIKey = process.env.OPENAI_API_KEY;
-const originalNodeEnv = process.env.NODE_ENV;
 
 afterEach(() => {
   if (originalOpenAIKey === undefined) {
@@ -19,7 +18,7 @@ afterEach(() => {
   } else {
     process.env.OPENAI_API_KEY = originalOpenAIKey;
   }
-  process.env.NODE_ENV = originalNodeEnv;
+  vi.unstubAllEnvs();
 });
 
 describe("mock Creator Growth Pack", () => {
@@ -76,7 +75,7 @@ describe("mock Creator Growth Pack", () => {
 describe("generateCreatorGrowthPack", () => {
   it("returns mock data when OPENAI_API_KEY is missing", async () => {
     delete process.env.OPENAI_API_KEY;
-    process.env.NODE_ENV = "test";
+    vi.stubEnv("NODE_ENV", "test");
 
     const growthPack = await generateCreatorGrowthPack(validGenerateInput);
 
@@ -87,7 +86,7 @@ describe("generateCreatorGrowthPack", () => {
 
   it("fails closed when production has no OpenAI key", async () => {
     delete process.env.OPENAI_API_KEY;
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
 
     await expect(generateCreatorGrowthPack(validGenerateInput)).rejects.toThrow(
       "OPENAI_API_KEY is not configured.",
