@@ -23,6 +23,13 @@ export const sourceDocumentSchema = z.object({
   content: z.string().trim().min(20).max(50_000),
 });
 
+export const audienceSignalSchema = z.object({
+  kind: z.enum(["pain_point", "objection", "motivation", "language", "content_pillar"]),
+  statement: z.string().trim().min(1).max(240),
+  evidence: z.string().trim().min(1).max(320),
+  confidence: z.enum(["low", "medium", "high"]),
+});
+
 export const experimentCreateSchema = z.object({
   sourceDocumentId: z.string().uuid().nullable().optional(),
   title: z.string().trim().min(1).max(240),
@@ -57,7 +64,8 @@ export const performanceSchema = z.object({
 });
 
 export type CreatorProfile = z.infer<typeof creatorProfileSchema>;
-export type SourceDocument = z.infer<typeof sourceDocumentSchema> & { id: string; createdAt: string };
+export type AudienceSignal = z.infer<typeof audienceSignalSchema>;
+export type SourceDocument = z.infer<typeof sourceDocumentSchema> & { id: string; createdAt: string; signals: AudienceSignal[] };
 export type ExperimentStatus = z.infer<typeof experimentStatusSchema>;
 export type ContentExperiment = z.infer<typeof experimentCreateSchema> & { id: string; status: ExperimentStatus; createdAt: string; updatedAt: string };
 export type PerformanceSnapshot = z.infer<typeof performanceSchema> & { id: string; createdAt: string };
