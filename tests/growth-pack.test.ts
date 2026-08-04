@@ -13,13 +13,17 @@ import {
 const originalOpenAIKey = process.env.OPENAI_API_KEY;
 const originalNodeEnv = process.env.NODE_ENV;
 
+function setNodeEnvironment(value: string | undefined) {
+  Object.assign(process.env, { NODE_ENV: value });
+}
+
 afterEach(() => {
   if (originalOpenAIKey === undefined) {
     delete process.env.OPENAI_API_KEY;
   } else {
     process.env.OPENAI_API_KEY = originalOpenAIKey;
   }
-  process.env.NODE_ENV = originalNodeEnv;
+  setNodeEnvironment(originalNodeEnv);
 });
 
 describe("mock Creator Growth Pack", () => {
@@ -76,7 +80,7 @@ describe("mock Creator Growth Pack", () => {
 describe("generateCreatorGrowthPack", () => {
   it("returns mock data when OPENAI_API_KEY is missing", async () => {
     delete process.env.OPENAI_API_KEY;
-    process.env.NODE_ENV = "test";
+    setNodeEnvironment("test");
 
     const growthPack = await generateCreatorGrowthPack(validGenerateInput);
 
@@ -87,7 +91,7 @@ describe("generateCreatorGrowthPack", () => {
 
   it("fails closed when production has no OpenAI key", async () => {
     delete process.env.OPENAI_API_KEY;
-    process.env.NODE_ENV = "production";
+    setNodeEnvironment("production");
 
     await expect(generateCreatorGrowthPack(validGenerateInput)).rejects.toThrow(
       "OPENAI_API_KEY is not configured.",

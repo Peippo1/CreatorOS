@@ -5,16 +5,20 @@ import { GET } from "@/app/api/health/route";
 const originalOpenAIKey = process.env.OPENAI_API_KEY;
 const originalNodeEnv = process.env.NODE_ENV;
 
+function setNodeEnvironment(value: string | undefined) {
+  Object.assign(process.env, { NODE_ENV: value });
+}
+
 afterEach(() => {
   if (originalOpenAIKey === undefined) delete process.env.OPENAI_API_KEY;
   else process.env.OPENAI_API_KEY = originalOpenAIKey;
-  process.env.NODE_ENV = originalNodeEnv;
+  setNodeEnvironment(originalNodeEnv);
 });
 
 describe("GET /api/health", () => {
   it("reports local readiness without an OpenAI key", async () => {
     delete process.env.OPENAI_API_KEY;
-    process.env.NODE_ENV = "test";
+    setNodeEnvironment("test");
 
     const response = GET();
 
@@ -28,7 +32,7 @@ describe("GET /api/health", () => {
 
   it("reports production as unavailable when the key is missing", async () => {
     delete process.env.OPENAI_API_KEY;
-    process.env.NODE_ENV = "production";
+    setNodeEnvironment("production");
 
     const response = GET();
 
