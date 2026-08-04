@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 import { checkGenerateRateLimit } from "@/app/api/generate/rate-limit";
+import { requireViewer } from "@/lib/api/auth";
 import { getPublicGenerationError } from "@/lib/generation/errors";
 import { generateCreatorGrowthPack } from "@/lib/orchestration/generate-growth-pack";
 
@@ -14,7 +15,10 @@ export async function POST(request: Request) {
   const requestId = crypto.randomUUID();
 
   try {
-    const rateLimit = await checkGenerateRateLimit(request);
+    const { viewer, response: authResponse } = await requireViewer();
+    if (authResponse) return authResponse;
+
+    const rateLimit = await checkGenerateRateLimit(request, viewer!.id);
 
     if (!rateLimit.allowed) {
       return jsonResponse(
