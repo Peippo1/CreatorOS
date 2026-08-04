@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import { Analytics } from '@vercel/analytics/next';
 
 import "./globals.css";
 
@@ -47,6 +48,7 @@ export default function RootLayout({
           <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
           <Link href="/terms" className="hover:text-foreground">Terms</Link>
         </footer>
+        <Analytics />
       </body>
     </html>
   );
