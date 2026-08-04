@@ -50,9 +50,11 @@ inviting beta users.
 
 CreatorOS keeps the public landing page available, but `/generate`, `/workspace`,
 and all workspace API routes require a Supabase session in production. Enable
-Supabase Email authentication before inviting users; the login page sends a
-magic link and does not collect passwords. Google and Apple sign-in can be
-enabled later in Supabase Auth without changing CreatorOS code.
+Supabase Email authentication before inviting users. The beta is invite-only:
+create or invite each tester in Supabase Auth → Users before they use the login
+page. The login page sends a magic link and does not collect passwords. Google
+and Apple sign-in can be enabled later in Supabase Auth without changing
+CreatorOS code.
 
 The login route permits five requests per IP address every 15 minutes. Signed-in
 users may generate ten Growth Packs every 10 minutes. Both limits use the shared

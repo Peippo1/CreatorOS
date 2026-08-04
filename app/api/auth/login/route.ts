@@ -23,7 +23,12 @@ export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: `${getAppOrigin(request)}/auth/callback` },
+    options: {
+      emailRedirectTo: `${getAppOrigin(request)}/auth/callback`,
+      // CreatorOS is invite-only during beta: only users created in Supabase
+      // can receive a sign-in link, preventing public self-registration.
+      shouldCreateUser: false,
+    },
   });
   if (error) return NextResponse.json({ error: "Could not send sign-in link." }, { status: 400 });
   return NextResponse.json({ message: "Check your email for a sign-in link." });
