@@ -25,7 +25,11 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import type { CreatorGrowthPack, TargetPlatform } from "@/lib/types/generation";
+import {
+  GENERATION_LIMITS,
+  type CreatorGrowthPack,
+  type TargetPlatform,
+} from "@/lib/types/generation";
 
 const platforms: TargetPlatform[] = [
   "LinkedIn",
@@ -57,10 +61,20 @@ export function GenerateWorkspace() {
   const [targetAudience, setTargetAudience] = useState(
     "solo creators building internet businesses",
   );
+  const [profileContext, setProfileContext] = useState<Record<string, unknown> | undefined>();
   const [growthPack, setGrowthPack] = useState<CreatorGrowthPack | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const outputRef = useRef<HTMLDivElement>(null);
+  const requestControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    void fetch("/api/profile").then(async (response) => {
+      if (!response.ok) return;
+      const data = await response.json() as { profile?: Record<string, unknown> | null };
+      if (data.profile) setProfileContext(data.profile);
+    });
+  }, []);
 
   useEffect(() => {
     if (!growthPack || !outputRef.current) return;
@@ -74,6 +88,8 @@ export function GenerateWorkspace() {
     event.preventDefault();
     setError(null);
     setIsLoading(true);
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
 
     try {
       const response = await fetch("/api/generate", {
@@ -86,7 +102,9 @@ export function GenerateWorkspace() {
           creatorNiche,
           targetPlatform,
           targetAudience,
+          profileContext,
         }),
+        signal: controller.signal,
       });
 
       const data = (await response.json()) as GenerateResponse;
@@ -97,14 +115,23 @@ export function GenerateWorkspace() {
 
       setGrowthPack(data.growthPack);
     } catch (caughtError) {
+      if (caughtError instanceof DOMException && caughtError.name === "AbortError") {
+        return;
+      }
+
       setError(
         caughtError instanceof Error
           ? caughtError.message
           : "CreatorOS could not generate a pack.",
       );
     } finally {
+      requestControllerRef.current = null;
       setIsLoading(false);
     }
+  }
+
+  function cancelGeneration() {
+    requestControllerRef.current?.abort();
   }
 
   return (
@@ -129,6 +156,10 @@ export function GenerateWorkspace() {
                 rows={10}
                 disabled={isLoading}
               />
+              <p className="text-xs text-muted-foreground">
+                80–{GENERATION_LIMITS.transcriptMaxLength.toLocaleString()} characters.
+                Treat pasted source material as sensitive.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -141,6 +172,9 @@ export function GenerateWorkspace() {
                   placeholder="Creator education"
                   disabled={isLoading}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Up to {GENERATION_LIMITS.creatorNicheMaxLength} characters.
+                </p>
               </div>
 
               <div className="flex flex-col gap-2">
@@ -177,6 +211,9 @@ export function GenerateWorkspace() {
                 placeholder="Solo creators building internet businesses"
                 disabled={isLoading}
               />
+              <p className="text-xs text-muted-foreground">
+                Up to {GENERATION_LIMITS.targetAudienceMaxLength} characters.
+              </p>
             </div>
 
             {error ? (
@@ -186,14 +223,25 @@ export function GenerateWorkspace() {
               </Alert>
             ) : null}
 
-            <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
+            <Button
+              type={isLoading ? "button" : "submit"}
+              size="lg"
+              className="w-full"
+              disabled={false}
+              onClick={isLoading ? cancelGeneration : undefined}
+              variant={isLoading ? "outline" : "default"}
+            >
               {isLoading ? (
                 <Loader2Icon data-icon="inline-start" className="animate-spin" />
               ) : (
                 <SparklesIcon data-icon="inline-start" />
               )}
-              {isLoading ? "Building strategy" : "Build Growth Pack"}
+              {isLoading ? "Cancel generation" : "Build Growth Pack"}
             </Button>
+            <p className="text-center text-xs leading-5 text-muted-foreground">
+              CreatorOS generates strategic suggestions, not guaranteed growth.
+              Review outputs before publishing.
+            </p>
           </form>
         </CardContent>
       </Card>

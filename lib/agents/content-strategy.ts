@@ -22,7 +22,7 @@ export async function runContentStrategyAgent({
     schema: contentStrategySchema,
     schemaName: "content_strategy",
     instructions: buildContentStrategyPrompt(input, audience),
-    input: formatPromptContext({ transcript: input.transcript }),
+    input: formatPromptContext({ transcript: input.transcript, profileContext: input.profileContext }),
     signal,
   });
 

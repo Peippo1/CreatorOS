@@ -41,6 +41,19 @@ export const generateInputSchema = z.object({
       GENERATION_LIMITS.targetAudienceMaxLength,
       "Target audience must be 160 characters or fewer.",
     ),
+  profileContext: z
+    .object({
+      positioning: z.string().max(500).optional(),
+      offer: z.string().max(500).optional(),
+      audienceSegments: z.array(z.string().max(160)).max(8).optional(),
+      painPoints: z.array(z.string().max(240)).max(12).optional(),
+      objections: z.array(z.string().max(240)).max(12).optional(),
+      motivations: z.array(z.string().max(240)).max(12).optional(),
+      contentPillars: z.array(z.string().max(120)).max(8).optional(),
+      brandVoice: z.string().max(500).optional(),
+      conversionGoal: z.string().max(240).optional(),
+    })
+    .optional(),
 });
 
 export const audienceIntelligenceSchema = z.object({

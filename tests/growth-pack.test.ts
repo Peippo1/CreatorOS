@@ -11,14 +11,15 @@ import {
 } from "./fixtures";
 
 const originalOpenAIKey = process.env.OPENAI_API_KEY;
+const originalNodeEnv = process.env.NODE_ENV;
 
 afterEach(() => {
   if (originalOpenAIKey === undefined) {
     delete process.env.OPENAI_API_KEY;
-    return;
+  } else {
+    process.env.OPENAI_API_KEY = originalOpenAIKey;
   }
-
-  process.env.OPENAI_API_KEY = originalOpenAIKey;
+  process.env.NODE_ENV = originalNodeEnv;
 });
 
 describe("mock Creator Growth Pack", () => {
@@ -75,11 +76,21 @@ describe("mock Creator Growth Pack", () => {
 describe("generateCreatorGrowthPack", () => {
   it("returns mock data when OPENAI_API_KEY is missing", async () => {
     delete process.env.OPENAI_API_KEY;
+    process.env.NODE_ENV = "test";
 
     const growthPack = await generateCreatorGrowthPack(validGenerateInput);
 
     expect(growthPack.meta.usedMockData).toBe(true);
     expect(growthPack.contentGaps.length).toBeGreaterThan(0);
     expect(creatorGrowthPackSchema.safeParse(growthPack).success).toBe(true);
+  });
+
+  it("fails closed when production has no OpenAI key", async () => {
+    delete process.env.OPENAI_API_KEY;
+    process.env.NODE_ENV = "production";
+
+    await expect(generateCreatorGrowthPack(validGenerateInput)).rejects.toThrow(
+      "OPENAI_API_KEY is not configured.",
+    );
   });
 });
