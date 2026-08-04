@@ -87,6 +87,27 @@ describe("POST /api/generate", () => {
     expect(body.error).toBe("Transcript must be 20,000 characters or fewer.");
   });
 
+  it("returns 413 before parsing an oversized request body", async () => {
+    delete process.env.OPENAI_API_KEY;
+
+    const response = await POST(
+      new Request("http://localhost/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": "100001",
+          "x-forwarded-for": "203.0.113.40",
+        },
+        body: "{}",
+      }),
+    );
+
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({
+      error: "Request body is too large.",
+    });
+  });
+
   it("returns 400 for unsupported target platforms", async () => {
     delete process.env.OPENAI_API_KEY;
 

@@ -25,7 +25,7 @@ export async function runRepurposingAgent({
     schema: repurposingSchema,
     schemaName: "repurposing",
     instructions: buildRepurposingPrompt(input, audience, strategy),
-    input: formatPromptContext({ transcript: input.transcript }),
+    input: formatPromptContext({ transcript: input.transcript, profileContext: input.profileContext }),
     signal,
   });
 

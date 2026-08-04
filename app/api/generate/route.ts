@@ -5,6 +5,11 @@ import { checkGenerateRateLimit } from "@/app/api/generate/rate-limit";
 import { getPublicGenerationError } from "@/lib/generation/errors";
 import { generateCreatorGrowthPack } from "@/lib/orchestration/generate-growth-pack";
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+const MAX_REQUEST_BODY_BYTES = 100_000;
+
 export async function POST(request: Request) {
   const requestId = crypto.randomUUID();
 
@@ -30,6 +35,13 @@ export async function POST(request: Request) {
 
     return jsonResponse({ growthPack }, { headers: { "X-Request-ID": requestId } });
   } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return jsonResponse(
+        { error: "Request body is too large." },
+        { status: 413 },
+      );
+    }
+
     if (error instanceof MalformedJsonError) {
       return jsonResponse(
         { error: "Malformed JSON request." },
@@ -80,10 +92,44 @@ class MalformedJsonError extends Error {
   }
 }
 
+class RequestBodyTooLargeError extends Error {
+  constructor() {
+    super("Request body is too large.");
+    this.name = "RequestBodyTooLargeError";
+  }
+}
+
 async function parseRequestJson(request: Request) {
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && Number(contentLength) > MAX_REQUEST_BODY_BYTES) {
+    throw new RequestBodyTooLargeError();
+  }
+
   try {
-    return await request.json();
-  } catch {
+    if (!request.body) return null;
+
+    const reader = request.body.getReader();
+    const decoder = new TextDecoder();
+    let totalBytes = 0;
+    let body = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      totalBytes += value.byteLength;
+      if (totalBytes > MAX_REQUEST_BODY_BYTES) {
+        await reader.cancel();
+        throw new RequestBodyTooLargeError();
+      }
+
+      body += decoder.decode(value, { stream: true });
+    }
+
+    body += decoder.decode();
+    return JSON.parse(body);
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) throw error;
     throw new MalformedJsonError();
   }
 }

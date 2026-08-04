@@ -60,6 +60,12 @@ The orchestration module applies one 60-second deadline across the sequential ag
 
 ## Extension Points
 
+## Growth-learning loop
+
+The workspace persists a `CreatorProfile`, source documents, content experiments, and performance snapshots through `lib/storage`. Supabase is selected when the URL, anon key, and server-only service-role key are configured; otherwise a global memory store keeps local demos usable. API routes always resolve the authenticated viewer before reading or writing data.
+
+`lib/learning/analyse.ts` deliberately uses deterministic scoring in v1. It joins snapshots to owned experiments, identifies the strongest and weakest patterns, and produces a next-test recommendation. This makes weekly review testable and keeps the learning signal separate from model creativity. `lib/metrics/csv.ts` validates manual imports before the route checks experiment ownership and skips duplicate experiment/date pairs.
+
 The structure is prepared for the next production layers without adding them to the MVP:
 
 - Add an Analytics Agent in `lib/agents` and insert it into `lib/orchestration/generate-growth-pack.ts`.

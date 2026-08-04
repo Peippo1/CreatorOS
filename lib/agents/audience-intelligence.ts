@@ -15,7 +15,7 @@ export async function runAudienceIntelligenceAgent(
     schema: audienceIntelligenceSchema,
     schemaName: "audience_intelligence",
     instructions: buildAudienceIntelligencePrompt(input),
-    input: formatPromptContext({ transcript: input.transcript }),
+    input: formatPromptContext({ transcript: input.transcript, profileContext: input.profileContext }),
     signal,
   });
 

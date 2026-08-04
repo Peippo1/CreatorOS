@@ -55,12 +55,7 @@ export default function Home() {
           </div>
           <span className="text-sm font-semibold tracking-tight">CreatorOS</span>
         </Link>
-        <Button asChild size="sm">
-          <Link href="/generate">
-            Build Growth Pack
-            <ArrowRightIcon data-icon="inline-end" />
-          </Link>
-        </Button>
+        <div className="flex items-center gap-3"><Link href="/workspace" className="text-sm text-muted-foreground hover:text-foreground">Workspace</Link><Button asChild size="sm"><Link href="/generate">Build Growth Pack<ArrowRightIcon data-icon="inline-end" /></Link></Button></div>
       </header>
 
       <section className="mx-auto grid w-full max-w-6xl grid-cols-1 items-center gap-12 px-6 pt-20 pb-16 lg:grid-cols-[1.05fr_0.95fr] lg:pt-28">

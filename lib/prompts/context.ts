@@ -15,5 +15,6 @@ export function getCreatorContext(input: GenerateInput) {
     creatorNiche: input.creatorNiche,
     targetPlatform: input.targetPlatform,
     targetAudience: input.targetAudience,
+    profileContext: input.profileContext,
   };
 }

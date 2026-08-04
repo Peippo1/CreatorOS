@@ -1,3 +1,5 @@
+import { MissingOpenAIKeyError } from "@/lib/openai/errors";
+
 export class GenerationTimeoutError extends Error {
   constructor() {
     super("Generation timed out.");
@@ -20,6 +22,13 @@ export function getPublicGenerationError(error: unknown): {
     return {
       status: 504,
       message: "Generation took too long. Please try again.",
+    };
+  }
+
+  if (error instanceof MissingOpenAIKeyError) {
+    return {
+      status: 503,
+      message: "The generation service is not configured. Please try again later.",
     };
   }
 

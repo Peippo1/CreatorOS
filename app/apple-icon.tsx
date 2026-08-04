@@ -17,17 +17,16 @@ export default function AppleIcon() {
           borderRadius: "20%",
         }}
       >
-        <span
+        <div
           style={{
-            color: "#ffffff",
-            fontSize: 110,
-            fontWeight: 700,
-            fontFamily: "sans-serif",
-            lineHeight: 1,
+            background: "#ffffff",
+            width: 112,
+            height: 78,
+            borderRadius: 24,
+            display: "flex",
+            position: "relative",
           }}
-        >
-          C
-        </span>
+        />
       </div>
     ),
     { ...size },

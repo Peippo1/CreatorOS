@@ -31,6 +31,11 @@ type GrowthPackOutputProps = {
 };
 
 export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
+  const [saved, setSaved] = useState(false);
+  async function saveExperiments() {
+    await Promise.all(growthPack.growthExperiments.map((item) => fetch("/api/experiments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: item.slice(0, 240), platform: "Primary platform", format: "Growth experiment", hypothesis: item, intendedOutcome: "Learn what grows the business" }) })));
+    setSaved(true);
+  }
   return (
     <Card>
       <CardHeader>
@@ -49,6 +54,9 @@ export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
         <div className="flex flex-wrap gap-2 pt-1">
           <CopyAllButton growthPack={growthPack} />
           <ExportMarkdownButton growthPack={growthPack} />
+          <Button type="button" variant="outline" size="sm" onClick={() => void saveExperiments()} disabled={saved}>
+            {saved ? "Saved to workspace" : "Save growth bets"}
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -114,7 +122,7 @@ function CopyButton({
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(text);
+      await copyText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -147,7 +155,7 @@ function CopyAllButton({ growthPack }: { growthPack: CreatorGrowthPack }) {
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(formatAsMarkdown(growthPack));
+      await copyText(formatAsMarkdown(growthPack));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -165,6 +173,27 @@ function CopyAllButton({ growthPack }: { growthPack: CreatorGrowthPack }) {
       {copied ? "Copied!" : "Copy all"}
     </Button>
   );
+}
+
+async function copyText(text: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  if (!document.execCommand("copy")) {
+    throw new Error("Clipboard is unavailable.");
+  }
+
+  document.body.removeChild(textarea);
 }
 
 function ExportMarkdownButton({ growthPack }: { growthPack: CreatorGrowthPack }) {
