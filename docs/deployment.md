@@ -13,10 +13,11 @@ CREATOROS_ALLOW_MOCK=false
 NEXT_PUBLIC_SUPABASE_URL=<Supabase project URL>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase anon key>
 SUPABASE_SERVICE_ROLE_KEY=<server-side Supabase service-role key>
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=<public Cloudflare Turnstile site key>
 APP_ORIGIN=https://<production-domain>
 ```
 
-Run `supabase/schema.sql` before inviting beta users. Enable email magic-link authentication, set Supabase's Site URL to `APP_ORIGIN`, and add `${APP_ORIGIN}/auth/callback` to its Auth redirect URLs. Never expose the service-role key to the browser.
+Run `supabase/schema.sql` before inviting beta users. Enable email magic-link authentication, set Supabase's Site URL to `APP_ORIGIN`, and add `${APP_ORIGIN}/auth/callback` to its Auth redirect URLs. Never expose the service-role key or the Turnstile secret to the browser.
 
 `OPENAI_API_KEY` is required in production. The application fails its readiness
 check and returns a safe configuration error rather than silently serving mock
@@ -60,6 +61,13 @@ The login route permits five requests per IP address every 15 minutes. Signed-in
 users may generate ten Growth Packs every 10 minutes. Both limits use the shared
 Supabase rate-limit function; production fails closed for generation if the
 shared limiter is unavailable.
+
+Enable Supabase Auth → Bot and Abuse Protection → CAPTCHA protection, select
+Cloudflare Turnstile, and save the Turnstile **secret key** there. Put only the
+matching **site key** in Vercel as `NEXT_PUBLIC_TURNSTILE_SITE_KEY` for both
+Preview and Production, then redeploy. CreatorOS requires a valid CAPTCHA token
+before it will request a beta magic link, and production fails closed if the
+site-key configuration is absent.
 
 ## Rollback and monitoring
 
