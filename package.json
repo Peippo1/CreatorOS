@@ -12,6 +12,7 @@
     "eval:prompts": "node --import tsx scripts/evaluate-prompts.ts"
   },
   "dependencies": {
+    "@marsidev/react-turnstile": "^1.5.5",
     "@radix-ui/react-label": "latest",
     "@radix-ui/react-select": "latest",
     "@radix-ui/react-slot": "latest",
