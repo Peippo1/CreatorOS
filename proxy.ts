@@ -1,8 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 
-function isSupabaseConfigured() {
-  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+function getSupabasePublicKey() {
+  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+}
+
+export function isSupabaseConfiguredForProxy() {
+  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && getSupabasePublicKey());
 }
 
 function isPublicApi(pathname: string) {
@@ -15,7 +19,7 @@ export async function proxy(request: NextRequest) {
 
   // Local demos remain frictionless, but a misconfigured production deployment
   // never exposes the app as an anonymous demo workspace.
-  if (!isSupabaseConfigured()) {
+  if (!isSupabaseConfiguredForProxy()) {
     if (process.env.NODE_ENV === "production") return unauthenticatedResponse(request);
     return NextResponse.next();
   }
@@ -23,7 +27,7 @@ export async function proxy(request: NextRequest) {
   const response = NextResponse.next({ request });
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getSupabasePublicKey()!,
     {
       cookies: {
         getAll: () => request.cookies.getAll(),

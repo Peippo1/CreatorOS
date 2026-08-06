@@ -11,7 +11,8 @@ OPENAI_API_KEY=<server-side OpenAI key>
 OPENAI_MODEL=gpt-5.2
 CREATOROS_ALLOW_MOCK=false
 NEXT_PUBLIC_SUPABASE_URL=<Supabase project URL>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase anon key>
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<Supabase publishable key>
+# Legacy Supabase projects may still use NEXT_PUBLIC_SUPABASE_ANON_KEY instead.
 SUPABASE_SERVICE_ROLE_KEY=<server-side Supabase service-role key>
 NEXT_PUBLIC_TURNSTILE_SITE_KEY=<public Cloudflare Turnstile site key>
 APP_ORIGIN=https://<production-domain>
