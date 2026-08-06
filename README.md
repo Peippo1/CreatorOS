@@ -167,11 +167,12 @@ OPENAI_API_KEY=
 OPENAI_MODEL=gpt-5.2
 CREATOROS_ALLOW_MOCK=true
 NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-Supabase is optional for local demos. Without the Supabase variables, CreatorOS uses a server-side demo store. For a real beta, run `supabase/schema.sql`, configure email magic links, and set the service-role key only as a server-side secret. Source material is never written to logs. The migration also installs a shared Postgres rate-limit function and beta event table.
+Supabase is optional for local demos. Without the Supabase variables, CreatorOS uses a server-side demo store. For a real beta, run `supabase/schema.sql`, configure email magic links, and set either `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Set the service-role key only as a server-side secret. Source material is never written to logs. The migration also installs a shared Postgres rate-limit function and beta event table.
 
 The code prefers `OPENAI_MODEL` when provided. If no model is configured, it uses the documented fallback constant `gpt-5.2`. If a configured model is unavailable or inaccessible to the API key, the OpenAI wrapper retries once with `gpt-5.2`. Other API failures are surfaced to the UI. Production fails closed when `OPENAI_API_KEY` is missing; set `CREATOROS_ALLOW_MOCK=true` only for local, non-production demos.
 
