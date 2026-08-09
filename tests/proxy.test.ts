@@ -68,4 +68,13 @@ describe("beta auth proxy", () => {
 
     expect(isSupabaseConfiguredForProxy()).toBe(true);
   });
+
+  it("falls back to the publishable key when a legacy anon key is blank", async () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://creator.example.supabase.co";
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "";
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
+    setEnvironment("production");
+
+    expect(isSupabaseConfiguredForProxy()).toBe(true);
+  });
 });
