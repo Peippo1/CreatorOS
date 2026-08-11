@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 import { recordBetaEvent } from "@/lib/analytics/events";
