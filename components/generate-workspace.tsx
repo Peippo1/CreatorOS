@@ -63,6 +63,7 @@ export function GenerateWorkspace() {
   );
   const [profileContext, setProfileContext] = useState<Record<string, unknown> | undefined>();
   const [growthPack, setGrowthPack] = useState<CreatorGrowthPack | null>(null);
+  const [generationId, setGenerationId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const outputRef = useRef<HTMLDivElement>(null);
@@ -114,6 +115,7 @@ export function GenerateWorkspace() {
       }
 
       setGrowthPack(data.growthPack);
+      setGenerationId(crypto.randomUUID());
     } catch (caughtError) {
       if (caughtError instanceof DOMException && caughtError.name === "AbortError") {
         return;
@@ -249,7 +251,15 @@ export function GenerateWorkspace() {
       <div ref={outputRef} className="scroll-mt-6">
         {isLoading ? <GrowthPackSkeleton /> : null}
         {!isLoading && growthPack ? (
-          <GrowthPackOutput growthPack={growthPack} />
+          <GrowthPackOutput
+            growthPack={growthPack}
+            experimentContext={generationId ? {
+              generationId,
+              audienceSegment: targetAudience,
+              audienceProblem: firstProfilePainPoint(profileContext) || growthPack.audienceInsights[0] || "",
+              platform: targetPlatform,
+            } : undefined}
+          />
         ) : null}
         {!isLoading && !growthPack ? (
           <Card className="min-h-48 justify-center border-dashed bg-card/70 sm:min-h-[42rem]">
@@ -291,4 +301,10 @@ function GrowthPackSkeleton() {
       </CardContent>
     </Card>
   );
+}
+
+
+function firstProfilePainPoint(profileContext: Record<string, unknown> | undefined) {
+  const painPoints = profileContext?.painPoints;
+  return Array.isArray(painPoints) && typeof painPoints[0] === "string" ? painPoints[0] : "";
 }
