@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const requireViewer = vi.hoisted(() => vi.fn());
 const recordBetaEvent = vi.hoisted(() => vi.fn());
@@ -34,6 +34,7 @@ function request(body: unknown) {
 }
 
 describe("POST /api/experiments/from-growth-pack", () => {
+  beforeEach(() => vi.clearAllMocks());
   it("persists an owned experiment and records a distinct beta event", async () => {
     requireViewer.mockResolvedValue({ viewer: { id: "user-1" }, response: null });
     listExperiments.mockResolvedValue([]);
