@@ -16,14 +16,14 @@ afterEach(() => {
   if (originalServiceRoleKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
   else process.env.SUPABASE_SERVICE_ROLE_KEY = originalServiceRoleKey;
   if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
-  else process.env.NODE_ENV = originalNodeEnv;
+  else process.env["NODE_ENV"] = originalNodeEnv;
 });
 
 describe("login rate limit", () => {
   it("allows ten valid attempts before returning a retry window", async () => {
     delete process.env.NEXT_PUBLIC_SUPABASE_URL;
     delete process.env.SUPABASE_SERVICE_ROLE_KEY;
-    process.env.NODE_ENV = "test";
+    process.env["NODE_ENV"] = "test";
 
     const request = new Request("https://creator.example/login", {
       headers: { "x-forwarded-for": "203.0.113.10" },
