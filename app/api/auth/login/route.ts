@@ -3,70 +3,61 @@ import { NextResponse } from "next/server";
 import { getAppOrigin } from "@/lib/app-origin";
 import { checkLoginRateLimit } from "@/app/api/generate/rate-limit";
 import { isTurnstileConfigured, isTurnstileRequired, isValidTurnstileToken } from "@/lib/auth/captcha";
+import { parseJsonBody, RequestBodyTooLargeError, MalformedJsonRequestError, sameOriginResponse, jsonResponse, safeNextPath } from "@/lib/api/request";
 import { createSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
-  const requestId = crypto.randomUUID();
+  const originResponse = sameOriginResponse(request);
+  if (originResponse) return originResponse;
 
-  if (!isSupabaseConfigured()) return jsonResponse({ error: "Supabase is not configured." }, 503, requestId);
+  const requestId = crypto.randomUUID();
+  if (!isSupabaseConfigured()) return jsonResponse({ error: "Supabase is not configured." }, { status: 503, headers: { "X-Request-ID": requestId } });
   const turnstileRequired = isTurnstileRequired();
   if (turnstileRequired && !isTurnstileConfigured()) {
-    return jsonResponse({ error: "CAPTCHA protection is not configured." }, 503, requestId);
+    return jsonResponse({ error: "CAPTCHA protection is not configured." }, { status: 503, headers: { "X-Request-ID": requestId } });
   }
 
-  let email: string | undefined;
-  let submittedCaptchaToken: unknown;
+  let body: { email?: unknown; captchaToken?: unknown; next?: unknown };
   try {
-    ({ email, captchaToken: submittedCaptchaToken } = await request.json() as { email?: string; captchaToken?: unknown });
-  } catch {
-    return jsonResponse({ error: "Enter a valid email address." }, 400, requestId);
+    body = await parseJsonBody(request) as { email?: unknown; captchaToken?: unknown; next?: unknown };
+  } catch (error) {
+    return jsonResponse(
+      { error: error instanceof RequestBodyTooLargeError ? "Request body is too large." : "Enter a valid email address." },
+      { status: error instanceof RequestBodyTooLargeError ? 413 : 400, headers: { "X-Request-ID": requestId } },
+    );
   }
-  email = email?.trim().toLowerCase();
+
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   if (!email || email.length > 320 || !email.includes("@")) {
-    return jsonResponse({ error: "Enter a valid email address." }, 400, requestId);
+    return jsonResponse({ error: "Enter a valid email address." }, { status: 400, headers: { "X-Request-ID": requestId } });
   }
+  const submittedCaptchaToken = body.captchaToken;
   if (turnstileRequired && !isValidTurnstileToken(submittedCaptchaToken)) {
-    return jsonResponse({ error: "Complete the verification to continue." }, 400, requestId);
+    return jsonResponse({ error: "Complete the verification to continue." }, { status: 400, headers: { "X-Request-ID": requestId } });
   }
 
   const rateLimit = await checkLoginRateLimit(request, Date.now(), requestId);
   if (rateLimit.outcome === "limited") {
     return jsonResponse(
       { error: "Too many sign-in requests. Please try again later." },
-      429,
-      requestId,
-      rateLimit.retryAfterSeconds,
+      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds), "X-Request-ID": requestId } },
     );
   }
   if (rateLimit.outcome === "unavailable") {
-    return jsonResponse(
-      { error: "Sign-in service is temporarily unavailable. Please try again later." },
-      503,
-      requestId,
-    );
+    return jsonResponse({ error: "Sign-in service is temporarily unavailable. Please try again later." }, { status: 503, headers: { "X-Request-ID": requestId } });
   }
 
+  const nextPath = safeNextPath(request, typeof body.next === "string" ? body.next : null);
   const captchaToken = isValidTurnstileToken(submittedCaptchaToken) ? submittedCaptchaToken : undefined;
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${getAppOrigin(request)}/auth/callback`,
-      // CreatorOS is invite-only during beta: only users created in Supabase
-      // can receive a sign-in link, preventing public self-registration.
+      emailRedirectTo: `${getAppOrigin(request)}/auth/callback?next=${encodeURIComponent(nextPath)}`,
       shouldCreateUser: false,
       ...(turnstileRequired ? { captchaToken: captchaToken! } : {}),
     },
   });
-  if (error) return jsonResponse({ error: "Could not send sign-in link." }, 400, requestId);
-  return jsonResponse({ message: "Check your email for a sign-in link." }, 200, requestId);
-}
-
-function jsonResponse(body: Record<string, unknown>, status: number, requestId: string, retryAfterSeconds?: number) {
-  const headers = new Headers({
-    "Cache-Control": "no-store",
-    "X-Request-ID": requestId,
-  });
-  if (retryAfterSeconds !== undefined) headers.set("Retry-After", String(retryAfterSeconds));
-  return NextResponse.json(body, { status, headers });
+  if (error) return jsonResponse({ error: "Could not send sign-in link." }, { status: 400, headers: { "X-Request-ID": requestId } });
+  return jsonResponse({ message: "Check your email for a sign-in link." }, { headers: { "X-Request-ID": requestId } });
 }
