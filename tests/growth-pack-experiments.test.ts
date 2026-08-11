@@ -58,7 +58,6 @@ describe("Growth Pack experiment transformation", () => {
       title: "Three steps to plan next week's content.",
       format: "Short video",
       draft: "Three steps to plan next week's content.",
-      status: undefined,
     });
   });
 
