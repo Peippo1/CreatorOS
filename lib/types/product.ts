@@ -73,6 +73,6 @@ export type BetaEventName = z.infer<typeof betaEventNameSchema>;
 export type BetaEvent = { name: BetaEventName; occurredAt: string };
 export type SourceDocument = z.infer<typeof sourceDocumentSchema> & { id: string; createdAt: string; signals: AudienceSignal[] };
 export type ExperimentStatus = z.infer<typeof experimentStatusSchema>;
-export type ContentExperiment = z.infer<typeof experimentCreateSchema> & { id: string; status: ExperimentStatus; createdAt: string; updatedAt: string };
+export type ContentExperiment = Omit<z.infer<typeof experimentCreateSchema>, "sourceReference" | "sourceItemKey"> & { sourceReference?: string; sourceItemKey?: string; id: string; status: ExperimentStatus; createdAt: string; updatedAt: string };
 export type PerformanceSnapshot = z.infer<typeof performanceSchema> & { id: string; createdAt: string };
 export type LearningInsight = { title: string; evidence: string; recommendation: string; confidence: "low" | "medium" | "high" };
