@@ -11,11 +11,6 @@ export async function POST(request: Request) {
   if (turnstileRequired && !isTurnstileConfigured()) {
     return NextResponse.json({ error: "CAPTCHA protection is not configured." }, { status: 503 });
   }
-  const rateLimit = await checkLoginRateLimit(request);
-  if (!rateLimit.allowed) return NextResponse.json(
-    { error: "Too many sign-in requests. Please try again later." },
-    { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds), "Cache-Control": "no-store" } },
-  );
 
   let email: string | undefined;
   let submittedCaptchaToken: unknown;
@@ -29,6 +24,15 @@ export async function POST(request: Request) {
   if (turnstileRequired && !isValidTurnstileToken(submittedCaptchaToken)) {
     return NextResponse.json({ error: "Complete the verification to continue." }, { status: 400 });
   }
+
+  // Only count a request after the payload and CAPTCHA are valid. Failed
+  // verification attempts must not consume the sign-in allowance.
+  const rateLimit = await checkLoginRateLimit(request);
+  if (!rateLimit.allowed) return NextResponse.json(
+    { error: "Too many sign-in requests. Please try again later." },
+    { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds), "Cache-Control": "no-store" } },
+  );
+
   const captchaToken = isValidTurnstileToken(submittedCaptchaToken) ? submittedCaptchaToken : undefined;
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithOtp({

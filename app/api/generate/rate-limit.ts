@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 const RATE_LIMIT_WINDOW_SECONDS = 10 * 60;
 const RATE_LIMIT_MAX_REQUESTS = 10;
 const LOGIN_RATE_LIMIT_WINDOW_SECONDS = 15 * 60;
-const LOGIN_RATE_LIMIT_MAX_REQUESTS = 5;
+const LOGIN_RATE_LIMIT_MAX_REQUESTS = 10;
 type RateLimitBucket = { count: number; resetAt: number };
 const buckets = new Map<string, RateLimitBucket>();
 
@@ -16,7 +16,9 @@ export async function checkGenerateRateLimit(request: Request, userId?: string, 
 }
 
 export async function checkLoginRateLimit(request: Request, now = Date.now()): Promise<RateLimitResult> {
-  return checkRateLimit(`login:${getClientIp(request)}`, LOGIN_RATE_LIMIT_WINDOW_SECONDS, LOGIN_RATE_LIMIT_MAX_REQUESTS, now);
+  // Version the bucket so a previously exhausted beta bucket does not keep
+  // locking users out after the production limit is corrected.
+  return checkRateLimit(`login:v2:${getClientIp(request)}`, LOGIN_RATE_LIMIT_WINDOW_SECONDS, LOGIN_RATE_LIMIT_MAX_REQUESTS, now);
 }
 
 async function checkRateLimit(identifier: string, windowSeconds: number, maxRequests: number, now: number): Promise<RateLimitResult> {
