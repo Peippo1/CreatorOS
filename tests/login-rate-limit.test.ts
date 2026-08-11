@@ -59,6 +59,6 @@ describe("login rate limit", () => {
       await checkLoginRateLimit(firstClient, 1_000);
     }
 
-    await expect(checkLoginRateLimit(secondClient, 1_000)).resolves.toEqual({ allowed: true });
+    await expect(checkLoginRateLimit(secondClient, 1_000)).resolves.toEqual({ outcome: "allowed", source: "memory" });
   });
 });
