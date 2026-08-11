@@ -6,10 +6,12 @@ import { isTurnstileConfigured, isTurnstileRequired, isValidTurnstileToken } fro
 import { createSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
-  if (!isSupabaseConfigured()) return NextResponse.json({ error: "Supabase is not configured." }, { status: 503 });
+  const requestId = crypto.randomUUID();
+
+  if (!isSupabaseConfigured()) return jsonResponse({ error: "Supabase is not configured." }, 503, requestId);
   const turnstileRequired = isTurnstileRequired();
   if (turnstileRequired && !isTurnstileConfigured()) {
-    return NextResponse.json({ error: "CAPTCHA protection is not configured." }, { status: 503 });
+    return jsonResponse({ error: "CAPTCHA protection is not configured." }, 503, requestId);
   }
 
   let email: string | undefined;
@@ -17,21 +19,32 @@ export async function POST(request: Request) {
   try {
     ({ email, captchaToken: submittedCaptchaToken } = await request.json() as { email?: string; captchaToken?: unknown });
   } catch {
-    return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
+    return jsonResponse({ error: "Enter a valid email address." }, 400, requestId);
   }
   email = email?.trim().toLowerCase();
-  if (!email || email.length > 320 || !email.includes("@")) return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
+  if (!email || email.length > 320 || !email.includes("@")) {
+    return jsonResponse({ error: "Enter a valid email address." }, 400, requestId);
+  }
   if (turnstileRequired && !isValidTurnstileToken(submittedCaptchaToken)) {
-    return NextResponse.json({ error: "Complete the verification to continue." }, { status: 400 });
+    return jsonResponse({ error: "Complete the verification to continue." }, 400, requestId);
   }
 
-  // Only count a request after the payload and CAPTCHA are valid. Failed
-  // verification attempts must not consume the sign-in allowance.
-  const rateLimit = await checkLoginRateLimit(request);
-  if (!rateLimit.allowed) return NextResponse.json(
-    { error: "Too many sign-in requests. Please try again later." },
-    { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds), "Cache-Control": "no-store" } },
-  );
+  const rateLimit = await checkLoginRateLimit(request, Date.now(), requestId);
+  if (rateLimit.outcome === "limited") {
+    return jsonResponse(
+      { error: "Too many sign-in requests. Please try again later." },
+      429,
+      requestId,
+      rateLimit.retryAfterSeconds,
+    );
+  }
+  if (rateLimit.outcome === "unavailable") {
+    return jsonResponse(
+      { error: "Sign-in service is temporarily unavailable. Please try again later." },
+      503,
+      requestId,
+    );
+  }
 
   const captchaToken = isValidTurnstileToken(submittedCaptchaToken) ? submittedCaptchaToken : undefined;
   const supabase = await createSupabaseServerClient();
@@ -45,6 +58,15 @@ export async function POST(request: Request) {
       ...(turnstileRequired ? { captchaToken: captchaToken! } : {}),
     },
   });
-  if (error) return NextResponse.json({ error: "Could not send sign-in link." }, { status: 400 });
-  return NextResponse.json({ message: "Check your email for a sign-in link." });
+  if (error) return jsonResponse({ error: "Could not send sign-in link." }, 400, requestId);
+  return jsonResponse({ message: "Check your email for a sign-in link." }, 200, requestId);
+}
+
+function jsonResponse(body: Record<string, unknown>, status: number, requestId: string, retryAfterSeconds?: number) {
+  const headers = new Headers({
+    "Cache-Control": "no-store",
+    "X-Request-ID": requestId,
+  });
+  if (retryAfterSeconds !== undefined) headers.set("Retry-After", String(retryAfterSeconds));
+  return NextResponse.json(body, { status, headers });
 }
