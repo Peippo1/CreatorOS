@@ -44,9 +44,9 @@ describe("login rate limit", () => {
   });
 
   it("does not share a login allowance across client IPs", async () => {
-    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
-    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
-    process.env.NODE_ENV = "test";
+    setEnvironment("NEXT_PUBLIC_SUPABASE_URL", undefined);
+    setEnvironment("SUPABASE_SERVICE_ROLE_KEY", undefined);
+    setEnvironment("NODE_ENV", "test");
 
     const firstClient = new Request("https://creator.example/login", {
       headers: { "x-forwarded-for": "203.0.113.11" },
