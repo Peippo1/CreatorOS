@@ -16,13 +16,13 @@ const environmentNames = [
 ] as const;
 const originalEnvironment = Object.fromEntries(environmentNames.map((name) => [name, process.env[name]]));
 
-function restore(name: typeof environmentNames[number], value: string | undefined) {
+function setEnvironment(name: string, value: string | undefined) {
   if (value === undefined) delete process.env[name];
   else process.env[name] = value;
 }
 
 afterEach(() => {
-  for (const name of environmentNames) restore(name, originalEnvironment[name]);
+  for (const name of environmentNames) setEnvironment(name, originalEnvironment[name]);
 });
 
 describe("Supabase server configuration", () => {
