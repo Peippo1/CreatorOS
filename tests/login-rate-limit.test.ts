@@ -7,7 +7,12 @@ import {
 
 const originalSupabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const originalServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const originalNodeEnv = process.env.NODE_ENV;
+
+function setEnvironment(name: string, value: string | undefined) {
+  if (value === undefined) delete process.env[name];
+  else process.env[name] = value;
+}
+const originalNodeEnv = process.env["NODE_ENV"];
 
 afterEach(() => {
   resetGenerateRateLimitForTests();
@@ -15,15 +20,14 @@ afterEach(() => {
   else process.env.NEXT_PUBLIC_SUPABASE_URL = originalSupabaseUrl;
   if (originalServiceRoleKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
   else process.env.SUPABASE_SERVICE_ROLE_KEY = originalServiceRoleKey;
-  if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
-  else process.env["NODE_ENV"] = originalNodeEnv;
+  setEnvironment("NODE_ENV", originalNodeEnv);
 });
 
 describe("login rate limit", () => {
   it("allows ten valid attempts before returning a retry window", async () => {
-    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
-    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
-    process.env["NODE_ENV"] = "test";
+    setEnvironment("NEXT_PUBLIC_SUPABASE_URL", undefined);
+    setEnvironment("SUPABASE_SERVICE_ROLE_KEY", undefined);
+    setEnvironment("NODE_ENV", "test");
 
     const request = new Request("https://creator.example/login", {
       headers: { "x-forwarded-for": "203.0.113.10" },
