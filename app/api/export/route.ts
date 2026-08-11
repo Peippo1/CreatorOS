@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import { requireViewer } from "@/lib/api/auth";
-import { jsonResponse } from "@/lib/api/request";
 import { getStore } from "@/lib/storage";
 
 export async function GET(request: Request) {
