@@ -142,12 +142,12 @@ function checkMemoryRateLimit(key: string, now: number, windowSeconds: number, m
 
 function logRateLimitOutcome(requestId: string, category: RateLimitCategory, result: RateLimitOutcome) {
   if (process.env.NODE_ENV === "test") return;
-  const level = result.outcome === "unavailable" ? "warn" : "info";
-  console[level === "warn" ? "warn" : "info"]("CreatorOS rate limit", {
-    requestId,
-    category,
-    outcome: result.outcome,
-  });
+  const fields = { requestId, category, outcome: result.outcome };
+  if (result.outcome === "unavailable") {
+    console.warn("CreatorOS rate limit", fields);
+  } else {
+    console.info("CreatorOS rate limit", fields);
+  }
 }
 
 export function getClientIp(request: Request) {
