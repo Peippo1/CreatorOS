@@ -30,10 +30,12 @@ export const audienceSignalSchema = z.object({
   confidence: z.enum(["low", "medium", "high"]),
 });
 
-export const betaEventNameSchema = z.enum(["profile_saved", "source_added", "experiment_created", "experiment_published", "weekly_review_completed"]);
+export const betaEventNameSchema = z.enum(["profile_saved", "source_added", "experiment_created", "experiment_created_from_growth_pack", "experiment_published", "weekly_review_completed"]);
 
 export const experimentCreateSchema = z.object({
   sourceDocumentId: z.string().uuid().nullable().optional(),
+  sourceReference: z.string().trim().max(240).default(""),
+  sourceItemKey: z.string().trim().max(160).default(""),
   title: z.string().trim().min(1).max(240),
   audienceSegment: z.string().trim().max(160).default(""),
   audienceProblem: z.string().trim().max(500).default(""),
