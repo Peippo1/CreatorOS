@@ -48,17 +48,17 @@ lib/
 - Zod validates transcript, creator niche, platform, and audience fields before orchestration runs.
 - Request caps are intentionally small: 20,000 characters for transcript, 120 for creator niche, and 160 for target audience.
 - Target platform must match the supported enum values.
-- A small in-memory limiter allows 10 requests per 10 minutes per IP and returns `429` with `Retry-After` when exceeded.
+- The shared Postgres limiter allows ten requests per 10 minutes per signed-in user and returns `429` with `Retry-After` when exceeded.
 - Responses are marked `Cache-Control: no-store` because inputs and outputs can contain creator material.
 - Provider failures and deadline failures are translated into safe `502` and `504` responses with a request ID; raw provider messages are not returned to the browser.
 
-The limiter reads the first `x-forwarded-for` IP, then `x-real-ip`, then falls back to `unknown`. Because state is process-local, this is appropriate only for development and single-instance deployments. A multi-instance or serverless production deployment should move rate limiting to a shared store, gateway, or hosting-platform control.
+The limiter uses SHA-256 bucket keys and the service-role Supabase RPC in production. Missing or blank server-side configuration, an invalid service-role key, an RPC failure, or an invalid RPC response returns a safe `503` and never falls back to process-local state. Local development and tests retain the in-memory fallback.
 
-## Generation Safety
+## Runtime configuration and persistence
 
-The orchestration module applies one 60-second deadline across the sequential agent flow and passes its cancellation signal to every OpenAI request. Retries stop once that signal is aborted. Prompt builders format creator input, source material, and upstream agent output as untrusted JSON context and direct each agent to treat it as data rather than instructions.
+`lib/config/runtime.ts` is the single configuration module for production readiness. It reports only safe booleans and category names. The Supabase adapter is selected only when Auth and the server-side service-role key are configured. The memory adapter remains available for local development, but production refuses workspace operations instead of risking silent data loss.
 
-## Runtime configuration and persistence\n\n`lib/config/runtime.ts` is the single configuration module for production readiness. It reports only safe booleans and category names. The Supabase adapter is selected only when Auth and the server-side service-role key are configured. The memory adapter remains available for local development, but production refuses workspace operations instead of risking silent data loss.\n\n## Extension Points
+## Extension Points
 
 ## Growth-learning loop
 
