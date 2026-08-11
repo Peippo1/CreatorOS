@@ -1,12 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 
-function getSupabasePublicKey() {
-  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
-}
+import { getSupabasePublicKey, isSupabaseAuthConfigured } from "@/lib/config/runtime";
 
 export function isSupabaseConfiguredForProxy() {
-  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() && getSupabasePublicKey());
+  return isSupabaseAuthConfigured();
 }
 
 function isPublicApi(pathname: string) {
