@@ -20,9 +20,7 @@ APP_ORIGIN=https://<production-domain>
 
 Run `supabase/schema.sql` before inviting beta users. Enable email magic-link authentication, set Supabase's Site URL to `APP_ORIGIN`, and add `${APP_ORIGIN}/auth/callback` to its Auth redirect URLs. Never expose the service-role key or the Turnstile secret to the browser.
 
-`OPENAI_API_KEY` is required in production. The application fails its readiness
-check and returns a safe configuration error rather than silently serving mock
-output. Mock output remains available locally when `NODE_ENV` is not production.
+Production readiness requires OpenAI, Supabase Auth, Supabase persistence, Turnstile, and APP_ORIGIN configuration. `/api/health` reports safe boolean categories and never returns secret values. Production workspace requests refuse to use the in-memory adapter when persistence is unavailable. Mock output remains available locally when `NODE_ENV` is not production.
 
 ## Deployment workflow
 
@@ -42,7 +40,7 @@ secrets only.
 
 ## Abuse protection
 
-When Supabase is configured, `POST /api/generate` uses the atomic
+Production requires the Supabase service-role key for shared persistence and rate limiting. When Supabase is configured, `POST /api/generate` uses the atomic
 `consume_generation_rate_limit` Postgres function. It stores only a SHA-256
 bucket key, never a raw IP address. Local demos retain an in-memory fallback.
 Also enable project-level deployment protection and a platform/WAF rule before
@@ -83,7 +81,7 @@ site-key configuration is absent.
 
 ## Known beta limitations
 
-- The demo store is process-local when Supabase is not configured; use Supabase for persistence and ownership.
+- The demo store is process-local for local development only; production refuses workspace operations when Supabase persistence is not configured.
 - There are no billing controls, native publishing integrations, or social-platform API imports.
 - Product analytics events for activation and weekly return still need a hosted analytics provider.
 - Copy/export depends on browser capabilities, with a text-area fallback for
