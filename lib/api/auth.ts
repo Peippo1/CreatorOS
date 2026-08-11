@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 import { getViewer } from "@/lib/auth/viewer";
 import { isProductionPersistenceConfigured } from "@/lib/config/runtime";
 import { sameOriginResponse, jsonResponse } from "@/lib/api/request";
