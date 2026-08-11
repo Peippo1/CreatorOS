@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   const requestId = crypto.randomUUID();
 
   try {
-    const { viewer, response: authResponse } = await requireViewer();
+    const { viewer, response: authResponse } = await requireViewer(request, { stateChanging: true });
     if (authResponse) return authResponse;
 
     const rateLimit = await checkGenerateRateLimit(request, viewer!.id, Date.now(), requestId);

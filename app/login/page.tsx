@@ -1,15 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-export default function LoginPage() {
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const requestedNext = searchParams.get("next");
+  const nextPath = requestedNext?.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "/workspace";
+  const callbackError = searchParams.get("error") === "auth_callback_failed";
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(callbackError ? "That sign-in link is invalid or has expired. Please request a new one." : "");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaVersion, setCaptchaVersion] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,7 +33,7 @@ export default function LoginPage() {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, ...(turnstileSiteKey ? { captchaToken } : {}) }),
+        body: JSON.stringify({ email, next: nextPath, ...(turnstileSiteKey ? { captchaToken } : {}) }),
       });
       const data = await response.json() as { message?: string; error?: string };
       setMessage(data.message ?? data.error ?? "Could not send sign-in link.");
@@ -60,4 +65,8 @@ export default function LoginPage() {
       </Card>
     </main>
   );
+}
+
+export default function LoginPage() {
+  return <Suspense fallback={null}><LoginForm /></Suspense>;
 }

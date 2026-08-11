@@ -1,14 +1,13 @@
-import { NextResponse } from "next/server";
-
 import { requireViewer } from "@/lib/api/auth";
+import { jsonResponse } from "@/lib/api/request";
 import { parsePerformanceCsv } from "@/lib/metrics/csv";
 import { getStore } from "@/lib/storage";
 
 export async function POST(request: Request) {
-  const { viewer, response } = await requireViewer();
+  const { viewer, response } = await requireViewer(request, { stateChanging: true });
   if (response) return response;
   const body = await request.text();
-  if (body.length > 1_000_000) return NextResponse.json({ error: "CSV is too large." }, { status: 413 });
+  if (body.length > 1_000_000) return jsonResponse({ error: "CSV is too large." }, { status: 413 });
   const parsed = parsePerformanceCsv(body);
   const store = getStore();
   const experiments = await store.listExperiments(viewer!.id);
@@ -23,5 +22,5 @@ export async function POST(request: Request) {
     fingerprints.add(fingerprint);
     imported += 1;
   }
-  return NextResponse.json({ imported, errors: parsed.errors, skipped: parsed.rows.length - imported });
+  return jsonResponse({ imported, errors: parsed.errors, skipped: parsed.rows.length - imported });
 }

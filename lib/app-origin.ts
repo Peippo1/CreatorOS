@@ -1,5 +1,3 @@
-import "server-only";
-
 /**
  * Uses a configured canonical URL in production so authentication redirects
  * cannot be influenced by an untrusted Host header.

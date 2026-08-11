@@ -33,3 +33,34 @@ create policy "owner beta events" on public.beta_events for all using (auth.uid(
 alter function public.consume_generation_rate_limit(text, integer, integer) set search_path = public;
 revoke all on function public.consume_generation_rate_limit(text, integer, integer) from public, anon, authenticated;
 grant execute on function public.consume_generation_rate_limit(text, integer, integer) to service_role;
+
+create unique index if not exists source_documents_user_id_id_key on public.source_documents (user_id, id);
+create unique index if not exists content_experiments_user_id_id_key on public.content_experiments (user_id, id);
+create unique index if not exists performance_snapshots_user_experiment_published_key on public.performance_snapshots (user_id, experiment_id, published_at);
+create index if not exists source_documents_user_created_idx on public.source_documents (user_id, created_at desc);
+create index if not exists content_experiments_user_created_idx on public.content_experiments (user_id, created_at desc);
+create index if not exists performance_snapshots_user_published_idx on public.performance_snapshots (user_id, published_at desc);
+create index if not exists performance_snapshots_experiment_published_idx on public.performance_snapshots (experiment_id, published_at desc);
+
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'content_experiments_source_owner_fkey') then
+    alter table public.content_experiments
+      add constraint content_experiments_source_owner_fkey
+      foreign key (user_id, source_document_id)
+      references public.source_documents (user_id, id)
+      on delete set null (source_document_id);
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'performance_snapshots_nonnegative_metrics') then
+    alter table public.performance_snapshots
+      add constraint performance_snapshots_nonnegative_metrics
+      check (views >= 0 and likes >= 0 and comments >= 0 and shares >= 0 and saves >= 0 and clicks >= 0 and signups >= 0 and revenue >= 0 and qualified_leads >= 0 and (watch_time_minutes is null or watch_time_minutes >= 0))
+      not valid;
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'content_experiments_valid_status') then
+    alter table public.content_experiments
+      add constraint content_experiments_valid_status
+      check (status in ('idea', 'drafting', 'ready', 'published', 'reviewed'))
+      not valid;
+  end if;
+end $$;
