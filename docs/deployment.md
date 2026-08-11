@@ -40,11 +40,15 @@ secrets only.
 
 ## Abuse protection
 
-Production requires the Supabase service-role key for shared persistence and rate limiting. When Supabase is configured, `POST /api/generate` uses the atomic
-`consume_generation_rate_limit` Postgres function. It stores only a SHA-256
-bucket key, never a raw IP address. Local demos retain an in-memory fallback.
-Also enable project-level deployment protection and a platform/WAF rule before
-inviting beta users.
+Production requires the Supabase service-role key for shared persistence and rate limiting. When Supabase is configured, `POST /api/generate` and the login route use the atomic `consume_generation_rate_limit` Postgres function. It stores only a SHA-256 bucket key, never a raw IP address. Local demos retain an in-memory fallback.
+
+Rate-limit outcomes are explicit:
+
+- `allowed`: the shared limiter accepted the request, or local development used its memory fallback.
+- `limited`: the shared or local limiter rejected the request; the response is `429` with `Retry-After`.
+- `unavailable`: production could not validate or call the shared limiter; the response is `503` and production never falls back to process-local state.
+
+Rate-limit logs contain only a request ID, route category, and outcome. They do not include IP addresses, email addresses, source material, credentials, or raw database errors. Also enable project-level deployment protection and a platform/WAF rule before inviting beta users.
 
 ## Beta access controls
 
@@ -56,10 +60,10 @@ page. The login page sends a magic link and does not collect passwords. Google
 and Apple sign-in can be enabled later in Supabase Auth without changing
 CreatorOS code.
 
-The login route permits five requests per IP address every 15 minutes. Signed-in
+The login route permits ten requests per IP address every 15 minutes. Signed-in
 users may generate ten Growth Packs every 10 minutes. Both limits use the shared
-Supabase rate-limit function; production fails closed for generation if the
-shared limiter is unavailable.
+Supabase rate-limit function; production fails closed with a safe `503` response
+if the shared limiter is unavailable.
 
 Enable Supabase Auth → Bot and Abuse Protection → CAPTCHA protection, select
 Cloudflare Turnstile, and save the Turnstile **secret key** there. Put only the
