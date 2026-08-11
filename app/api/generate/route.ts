@@ -18,17 +18,25 @@ export async function POST(request: Request) {
     const { viewer, response: authResponse } = await requireViewer();
     if (authResponse) return authResponse;
 
-    const rateLimit = await checkGenerateRateLimit(request, viewer!.id);
+    const rateLimit = await checkGenerateRateLimit(request, viewer!.id, Date.now(), requestId);
 
-    if (!rateLimit.allowed) {
+    if (rateLimit.outcome === "limited") {
       return jsonResponse(
         { error: "Too many requests. Please retry later." },
         {
           status: 429,
           headers: {
             "Retry-After": String(rateLimit.retryAfterSeconds),
+            "X-Request-ID": requestId,
           },
         },
+      );
+    }
+
+    if (rateLimit.outcome === "unavailable") {
+      return jsonResponse(
+        { error: "Generation service is temporarily unavailable. Please try again later." },
+        { status: 503, headers: { "X-Request-ID": requestId } },
       );
     }
 

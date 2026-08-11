@@ -34,11 +34,11 @@ describe("login rate limit", () => {
     });
 
     for (let attempt = 0; attempt < 10; attempt += 1) {
-      await expect(checkLoginRateLimit(request, 1_000)).resolves.toEqual({ allowed: true });
+      await expect(checkLoginRateLimit(request, 1_000)).resolves.toEqual({ outcome: "allowed", source: "memory" });
     }
 
     await expect(checkLoginRateLimit(request, 1_000)).resolves.toMatchObject({
-      allowed: false,
+      outcome: "limited",
       retryAfterSeconds: expect.any(Number),
     });
   });
@@ -59,6 +59,6 @@ describe("login rate limit", () => {
       await checkLoginRateLimit(firstClient, 1_000);
     }
 
-    await expect(checkLoginRateLimit(secondClient, 1_000)).resolves.toEqual({ allowed: true });
+    await expect(checkLoginRateLimit(secondClient, 1_000)).resolves.toEqual({ outcome: "allowed", source: "memory" });
   });
 });
