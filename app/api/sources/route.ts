@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 import { extractAudienceSignals } from "@/lib/audience/extract-signals";
