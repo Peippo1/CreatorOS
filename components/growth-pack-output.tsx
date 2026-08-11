@@ -24,18 +24,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { SaveExperimentActions } from "@/components/save-experiment-actions";
 import type { CreatorGrowthPack } from "@/lib/types/generation";
+
+type ExperimentContext = {
+  generationId: string;
+  audienceSegment: string;
+  audienceProblem: string;
+  platform: string;
+};
 
 type GrowthPackOutputProps = {
   growthPack: CreatorGrowthPack;
+  experimentContext?: ExperimentContext;
 };
 
-export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
-  const [saved, setSaved] = useState(false);
-  async function saveExperiments() {
-    await Promise.all(growthPack.growthExperiments.map((item) => fetch("/api/experiments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: item.slice(0, 240), platform: "Primary platform", format: "Growth experiment", hypothesis: item, intendedOutcome: "Learn what grows the business" }) })));
-    setSaved(true);
-  }
+export function GrowthPackOutput({ growthPack, experimentContext }: GrowthPackOutputProps) {
   return (
     <Card>
       <CardHeader>
@@ -54,9 +58,9 @@ export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
         <div className="flex flex-wrap gap-2 pt-1">
           <CopyAllButton growthPack={growthPack} />
           <ExportMarkdownButton growthPack={growthPack} />
-          <Button type="button" variant="outline" size="sm" onClick={() => void saveExperiments()} disabled={saved}>
-            {saved ? "Saved to workspace" : "Save growth bets"}
-          </Button>
+          <span className="text-xs text-muted-foreground">
+            Save individual items to preserve their strategic reasoning.
+          </span>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -68,15 +72,20 @@ export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
         <StructuredSection
           title="Content Gaps"
           icon={CompassIcon}
+          experimentKind="content_gap"
+          experimentContext={experimentContext}
           items={growthPack.contentGaps.map((contentGap) => ({
             label: contentGap.gap,
             title: contentGap.whyItMatters,
             description: contentGap.suggestedExperiment,
+            experimentItem: contentGap,
           }))}
         />
         <ListSection
           title="Hook Hypotheses"
           icon={MessageSquareQuoteIcon}
+          experimentKind="hook"
+          experimentContext={experimentContext}
           items={growthPack.viralHooks}
         />
         <ListSection
@@ -87,23 +96,31 @@ export function GrowthPackOutput({ growthPack }: GrowthPackOutputProps) {
         <StructuredSection
           title="Platform Angles"
           icon={ClapperboardIcon}
+          experimentKind="platform_angle"
+          experimentContext={experimentContext}
           items={growthPack.shortFormIdeas.map((item) => ({
             label: item.format,
             title: item.idea,
             description: item.angle,
+            experimentItem: item,
           }))}
         />
         <StructuredSection
           title="Strategic Repurposing"
           icon={LightbulbIcon}
+          experimentKind="repurposed_content"
+          experimentContext={experimentContext}
           items={growthPack.repurposedContent.map((item) => ({
             label: item.format,
             title: item.content,
+            experimentItem: item,
           }))}
         />
         <ListSection
           title="Growth Experiments"
           icon={BeakerIcon}
+          experimentKind="growth_experiment"
+          experimentContext={experimentContext}
           items={growthPack.growthExperiments}
         />
       </CardContent>
@@ -220,10 +237,14 @@ function ListSection({
   title,
   icon: Icon,
   items,
+  experimentKind,
+  experimentContext,
 }: {
   title: string;
   icon: React.ComponentType<{ className?: string }>;
   items: string[];
+  experimentKind?: "hook" | "growth_experiment";
+  experimentContext?: ExperimentContext;
 }) {
   return (
     <section className="rounded-lg border bg-background p-4">
@@ -237,10 +258,20 @@ function ListSection({
         <CopyButton text={items.map((item) => `- ${item}`).join("\n")} />
       </div>
       <ul className="flex flex-col gap-3">
-        {items.map((item) => (
-          <li key={item} className="flex gap-3 text-sm leading-6">
-            <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
-            <span>{item}</span>
+        {items.map((item, index) => (
+          <li key={item} className="flex flex-col gap-1 text-sm leading-6">
+            <div className="flex gap-3">
+              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary" />
+              <span>{item}</span>
+            </div>
+            {experimentKind && experimentContext ? (
+              <SaveExperimentActions
+                kind={experimentKind}
+                index={index}
+                item={{ value: item }}
+                {...experimentContext}
+              />
+            ) : null}
           </li>
         ))}
       </ul>
@@ -252,6 +283,8 @@ function StructuredSection({
   title,
   icon: Icon,
   items,
+  experimentKind,
+  experimentContext,
 }: {
   title: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -259,7 +292,10 @@ function StructuredSection({
     label: string;
     title: string;
     description?: string;
+    experimentItem?: Record<string, string>;
   }>;
+  experimentKind?: "content_gap" | "platform_angle" | "repurposed_content";
+  experimentContext?: ExperimentContext;
 }) {
   const sectionText = items
     .map((item) =>
@@ -292,6 +328,14 @@ function StructuredSection({
               <p className="mt-2 text-sm text-muted-foreground">
                 {item.description}
               </p>
+            ) : null}
+            {experimentKind && experimentContext && item.experimentItem ? (
+              <SaveExperimentActions
+                kind={experimentKind}
+                index={items.indexOf(item)}
+                item={item.experimentItem}
+                {...experimentContext}
+              />
             ) : null}
           </article>
         ))}

@@ -30,10 +30,12 @@ export const audienceSignalSchema = z.object({
   confidence: z.enum(["low", "medium", "high"]),
 });
 
-export const betaEventNameSchema = z.enum(["profile_saved", "source_added", "experiment_created", "experiment_published", "weekly_review_completed"]);
+export const betaEventNameSchema = z.enum(["profile_saved", "source_added", "experiment_created", "experiment_created_from_growth_pack", "experiment_published", "weekly_review_completed"]);
 
 export const experimentCreateSchema = z.object({
   sourceDocumentId: z.string().uuid().nullable().optional(),
+  sourceReference: z.string().trim().max(240).default(""),
+  sourceItemKey: z.string().trim().max(160).default(""),
   title: z.string().trim().min(1).max(240),
   audienceSegment: z.string().trim().max(160).default(""),
   audienceProblem: z.string().trim().max(500).default(""),
@@ -71,6 +73,6 @@ export type BetaEventName = z.infer<typeof betaEventNameSchema>;
 export type BetaEvent = { name: BetaEventName; occurredAt: string };
 export type SourceDocument = z.infer<typeof sourceDocumentSchema> & { id: string; createdAt: string; signals: AudienceSignal[] };
 export type ExperimentStatus = z.infer<typeof experimentStatusSchema>;
-export type ContentExperiment = z.infer<typeof experimentCreateSchema> & { id: string; status: ExperimentStatus; createdAt: string; updatedAt: string };
+export type ContentExperiment = Omit<z.infer<typeof experimentCreateSchema>, "sourceReference" | "sourceItemKey"> & { sourceReference?: string; sourceItemKey?: string; id: string; status: ExperimentStatus; createdAt: string; updatedAt: string };
 export type PerformanceSnapshot = z.infer<typeof performanceSchema> & { id: string; createdAt: string };
 export type LearningInsight = { title: string; evidence: string; recommendation: string; confidence: "low" | "medium" | "high" };
