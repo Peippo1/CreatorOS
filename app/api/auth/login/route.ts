@@ -1,9 +1,7 @@
-import { NextResponse } from "next/server";
-
 import { getAppOrigin } from "@/lib/app-origin";
 import { checkLoginRateLimit } from "@/app/api/generate/rate-limit";
 import { isTurnstileConfigured, isTurnstileRequired, isValidTurnstileToken } from "@/lib/auth/captcha";
-import { parseJsonBody, RequestBodyTooLargeError, MalformedJsonRequestError, sameOriginResponse, jsonResponse, safeNextPath } from "@/lib/api/request";
+import { parseJsonBody, RequestBodyTooLargeError, sameOriginResponse, jsonResponse, safeNextPath } from "@/lib/api/request";
 import { createSupabaseServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
