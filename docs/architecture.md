@@ -58,7 +58,7 @@ The limiter reads the first `x-forwarded-for` IP, then `x-real-ip`, then falls b
 
 The orchestration module applies one 60-second deadline across the sequential agent flow and passes its cancellation signal to every OpenAI request. Retries stop once that signal is aborted. Prompt builders format creator input, source material, and upstream agent output as untrusted JSON context and direct each agent to treat it as data rather than instructions.
 
-## Extension Points
+## Runtime configuration and persistence\n\n`lib/config/runtime.ts` is the single configuration module for production readiness. It reports only safe booleans and category names. The Supabase adapter is selected only when Auth and the server-side service-role key are configured. The memory adapter remains available for local development, but production refuses workspace operations instead of risking silent data loss.\n\n## Extension Points
 
 ## Growth-learning loop
 
@@ -78,7 +78,7 @@ The structure is prepared for the next production layers without adding them to 
 
 ## Why API Routes First
 
-The MVP uses Next.js API routes instead of a separate FastAPI backend because the current product scope is a single synchronous workflow with no auth, billing, persistence, analytics ingestion, queues, or enterprise infrastructure.
+The MVP uses Next.js API routes instead of a separate FastAPI backend because the current product scope does not require a separate service. Auth, persistence, analytics ingestion, and rate limiting now live behind explicit modules and adapters within the Next.js application.
 
 API routes keep the first implementation smaller:
 
