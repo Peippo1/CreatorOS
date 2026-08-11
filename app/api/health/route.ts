@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
 
-import { hasOpenAIKey, isProductionEnvironment } from "@/lib/openai/config";
+import { getRuntimeConfiguration } from "@/lib/config/runtime";
 
 export const runtime = "nodejs";
 
 export function GET() {
-  const configured = hasOpenAIKey();
-  const ready = !isProductionEnvironment() || configured;
+  const configuration = getRuntimeConfiguration();
 
   return NextResponse.json(
     {
-      status: ready ? "ok" : "not_configured",
+      status: configuration.ready ? "ok" : "not_configured",
       service: "creatoros",
-      configured,
+      configured: configuration.openaiConfigured,
+      ...configuration,
     },
     {
-      status: ready ? 200 : 503,
+      status: configuration.ready ? 200 : 503,
       headers: { "Cache-Control": "no-store" },
     },
   );
