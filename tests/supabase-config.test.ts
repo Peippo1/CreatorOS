@@ -52,7 +52,7 @@ describe("Supabase server configuration", () => {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
     delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     delete process.env.SUPABASE_SERVICE_ROLE_KEY;
-    process.env.NODE_ENV = "production";
+    setEnvironment("NODE_ENV", "production");
 
     expect(isProductionPersistenceConfigured()).toBe(false);
 
