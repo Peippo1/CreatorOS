@@ -1,12 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
 
+import { getSupabasePublicKey, isSupabaseConfigured } from "@/lib/supabase/server";
 import {
-  getSupabasePublicKey,
+  isProductionPersistenceConfigured,
   isSupabaseAuthConfigured,
   isSupabasePersistenceConfigured,
-  isSupabaseConfigured,
-} from "@/lib/supabase/server";
-import { isProductionPersistenceConfigured } from "@/lib/config/runtime";
+} from "@/lib/config/runtime";
 
 const environmentNames = [
   "NEXT_PUBLIC_SUPABASE_URL",
