@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +10,20 @@ import { Input } from "@/components/ui/input";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [nextPath, setNextPath] = useState("/workspace");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaVersion, setCaptchaVersion] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedNext = params.get("next");
+    if (requestedNext?.startsWith("/") && !requestedNext.startsWith("//")) setNextPath(requestedNext);
+    if (params.get("error") === "auth_callback_failed") {
+      setMessage("That sign-in link is invalid or has expired. Please request a new one.");
+    }
+  }, []);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -28,7 +38,7 @@ export default function LoginPage() {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, ...(turnstileSiteKey ? { captchaToken } : {}) }),
+        body: JSON.stringify({ email, next: nextPath, ...(turnstileSiteKey ? { captchaToken } : {}) }),
       });
       const data = await response.json() as { message?: string; error?: string };
       setMessage(data.message ?? data.error ?? "Could not send sign-in link.");
