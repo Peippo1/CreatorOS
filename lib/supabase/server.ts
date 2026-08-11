@@ -1,12 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+import { getSupabasePublicKey as getRuntimeSupabasePublicKey, isSupabaseAuthConfigured } from "@/lib/config/runtime";
+
 export function getSupabasePublicKey() {
-  return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
+  return getRuntimeSupabasePublicKey();
 }
 
 export function isSupabaseConfigured() {
-  return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() && getSupabasePublicKey());
+  return isSupabaseAuthConfigured();
 }
 
 export async function createSupabaseServerClient() {

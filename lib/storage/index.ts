@@ -2,7 +2,7 @@ import "server-only";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-import { isSupabaseConfigured } from "@/lib/supabase/server";
+import { isProductionPersistenceConfigured } from "@/lib/config/runtime";
 import type { BetaEvent, BetaEventName, ContentExperiment, CreatorProfile, PerformanceSnapshot, SourceDocument } from "@/lib/types/product";
 
 type NewExperiment = Omit<ContentExperiment, "id" | "createdAt" | "updatedAt" | "status"> & { status?: ContentExperiment["status"] };
@@ -67,6 +67,9 @@ function normalizeExperiment(row: Record<string, unknown>): ContentExperiment { 
 function normalizePerformance(row: Record<string, unknown>): PerformanceSnapshot { return { ...row, experimentId: row.experiment_id, publishedAt: row.published_at, watchTimeMinutes: row.watch_time_minutes, qualifiedLeads: row.qualified_leads, createdAt: row.created_at } as PerformanceSnapshot; }
 
 export function getStore(): Store {
-  if (isSupabaseConfigured() && process.env.SUPABASE_SERVICE_ROLE_KEY) return new SupabaseStore(createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY));
+  if (isProductionPersistenceConfigured() && process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() && process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+    return new SupabaseStore(createClient(process.env.NEXT_PUBLIC_SUPABASE_URL.trim(), process.env.SUPABASE_SERVICE_ROLE_KEY.trim()));
+  }
+  if (process.env.NODE_ENV === "production") throw new Error("Production persistence is not configured.");
   return memoryStore();
 }
