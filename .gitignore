@@ -18,6 +18,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# browser test artifacts
+/playwright-report/
+/test-results/
+
 # prompt eval artifacts
 /evaluations/*
 !/evaluations/.gitkeep
