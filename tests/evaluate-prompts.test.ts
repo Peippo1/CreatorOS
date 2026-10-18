@@ -42,7 +42,7 @@ describe("evaluate-prompts CLI helpers", () => {
     );
 
     expect(artifact.fixtureName).toBe("Technical founder creator");
-    expect(artifact.rubric).toHaveLength(7);
+    expect(artifact.rubric).toHaveLength(12);
     expect(artifact.rubric[0]).toEqual({
       heading: "Specificity",
       score: "",

@@ -1,9 +1,16 @@
 import { runAudienceIntelligenceAgent } from "@/lib/agents/audience-intelligence";
 import { runContentStrategyAgent } from "@/lib/agents/content-strategy";
 import { runRepurposingAgent } from "@/lib/agents/repurposing";
-import { allowsMockGeneration, hasOpenAIKey } from "@/lib/openai/config";
+import {
+  allowsMockGeneration,
+  hasOpenAIKey,
+  resolveGenerationStageConfig,
+} from "@/lib/openai/config";
 import { MissingOpenAIKeyError } from "@/lib/openai/errors";
-import { runWithGenerationDeadline } from "@/lib/orchestration/generation-deadline";
+import {
+  runWithGenerationDeadline,
+  runWithStageTimeout,
+} from "@/lib/orchestration/generation-deadline";
 import { createMockGrowthPack } from "@/lib/orchestration/mock-growth-pack";
 import {
   generateInputSchema,
@@ -35,16 +42,27 @@ async function runAgentFlow(
   input: GenerateInput,
   signal: AbortSignal,
 ): Promise<CreatorGrowthPack> {
-  const audience = await runAudienceIntelligenceAgent(input, { signal });
-  const strategy = await runContentStrategyAgent({
-    input,
-    audience: audience.output,
-  }, { signal });
-  const repurposing = await runRepurposingAgent({
-    input,
-    audience: audience.output,
-    strategy: strategy.output,
-  }, { signal });
+  const audience = await runWithStageTimeout(
+    (stageSignal) =>
+      runAudienceIntelligenceAgent(input, { signal: stageSignal }),
+    { signal, timeoutMs: resolveGenerationStageConfig("audience").timeoutMs },
+  );
+  const strategy = await runWithStageTimeout(
+    (stageSignal) =>
+      runContentStrategyAgent(
+        { input, audience: audience.output },
+        { signal: stageSignal },
+      ),
+    { signal, timeoutMs: resolveGenerationStageConfig("strategy").timeoutMs },
+  );
+  const repurposing = await runWithStageTimeout(
+    (stageSignal) =>
+      runRepurposingAgent(
+        { input, audience: audience.output, strategy: strategy.output },
+        { signal: stageSignal },
+      ),
+    { signal, timeoutMs: resolveGenerationStageConfig("repurposing").timeoutMs },
+  );
 
   return {
     audienceInsights: audience.output.audienceInsights,
@@ -57,6 +75,15 @@ async function runAgentFlow(
     meta: {
       model: repurposing.model,
       usedMockData: false,
+      stages: [
+        { stage: "audience", model: audience.model, ...audience.telemetry },
+        { stage: "strategy", model: strategy.model, ...strategy.telemetry },
+        {
+          stage: "repurposing",
+          model: repurposing.model,
+          ...repurposing.telemetry,
+        },
+      ],
     },
   };
 }

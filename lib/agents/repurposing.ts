@@ -1,6 +1,7 @@
 import { createStructuredResponse } from "@/lib/openai/client";
 import { buildRepurposingPrompt } from "@/lib/prompts/repurposing";
 import { formatPromptContext } from "@/lib/prompts/context";
+import { resolveGenerationStageConfig } from "@/lib/openai/config";
 import {
   repurposingSchema,
   type AudienceIntelligence,
@@ -20,17 +21,40 @@ export async function runRepurposingAgent({
 }, { signal }: { signal?: AbortSignal } = {}): Promise<{
   output: RepurposingOutput;
   model: string;
+  telemetry: {
+    durationMs: number;
+    inputTokens?: number;
+    outputTokens?: number;
+    cachedInputTokens?: number;
+    attempts: number;
+    cacheHit: boolean;
+  };
 }> {
+  const stageConfig = resolveGenerationStageConfig("repurposing");
   const response = await createStructuredResponse({
     schema: repurposingSchema,
     schemaName: "repurposing",
-    instructions: buildRepurposingPrompt(input, audience, strategy),
-    input: formatPromptContext({ transcript: input.transcript, profileContext: input.profileContext }),
+    instructions: buildRepurposingPrompt(),
+    input: formatPromptContext({
+      creator: {
+        creatorNiche: input.creatorNiche,
+        targetPlatform: input.targetPlatform,
+        targetAudience: input.targetAudience,
+        profileContext: input.profileContext,
+      },
+      transcript: input.transcript,
+      audience,
+      strategy,
+    }),
     signal,
+    model: stageConfig.model,
+    maxOutputTokens: stageConfig.maxOutputTokens,
+    stage: "repurposing",
   });
 
   return {
     output: response.data,
     model: response.model,
+    telemetry: { ...response.telemetry, cacheHit: false },
   };
 }

@@ -1,11 +1,17 @@
 import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 import type { z } from "zod";
+import { createHash } from "node:crypto";
 
-import { DEFAULT_OPENAI_MODEL, hasOpenAIKey, resolveOpenAIModel } from "./config";
+import {
+  DEFAULT_OPENAI_MODEL,
+  hasOpenAIKey,
+  resolveOpenAIModel,
+} from "./config";
 import { UpstreamGenerationError } from "@/lib/generation/errors";
 import {
   getErrorMessage,
+  getOpenAIErrorCategory,
   isModelAvailabilityError,
   isRetryableOpenAIError,
   MissingOpenAIKeyError,
@@ -34,28 +40,33 @@ type StructuredResponseParams<TSchema extends z.ZodType> = {
   instructions: string;
   input: string;
   signal?: AbortSignal;
+  model?: string;
+  maxOutputTokens?: number;
+  stage?: string;
 };
 
-export async function createStructuredResponse<TSchema extends z.ZodType>({
-  schema,
-  schemaName,
-  instructions,
-  input,
-  signal,
-}: StructuredResponseParams<TSchema>): Promise<{
+export type StructuredResponseTelemetry = {
+  model: string;
+  durationMs: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  cachedInputTokens?: number;
+  attempts: number;
+};
+
+export async function createStructuredResponse<TSchema extends z.ZodType>(
+  request: StructuredResponseParams<TSchema>,
+): Promise<{
   data: z.infer<TSchema>;
   model: string;
+  telemetry: StructuredResponseTelemetry;
 }> {
-  const preferredModel = resolveOpenAIModel();
+  const preferredModel = paramsModelOrDefault(request);
 
   try {
     return await requestWithRetries({
-      schema,
-      schemaName,
-      instructions,
-      input,
+      ...request,
       model: preferredModel,
-      signal,
     });
   } catch (error) {
     if (
@@ -64,19 +75,21 @@ export async function createStructuredResponse<TSchema extends z.ZodType>({
     ) {
       try {
         return await requestWithRetries({
-          schema,
-          schemaName,
-          instructions,
-          input,
+          schema: request.schema,
+          schemaName: request.schemaName,
+          instructions: request.instructions,
+          input: request.input,
           model: DEFAULT_OPENAI_MODEL,
-          signal,
+          signal: request.signal,
+          maxOutputTokens: request.maxOutputTokens,
+          stage: request.stage,
         });
       } catch (fallbackError) {
-        throw normalizeOpenAIError(fallbackError);
+        throw normalizeOpenAIError(fallbackError, request.stage);
       }
     }
 
-    throw normalizeOpenAIError(error);
+    throw normalizeOpenAIError(error, request.stage);
   }
 }
 
@@ -87,11 +100,14 @@ async function requestWithRetries<TSchema extends z.ZodType>({
   input,
   model,
   signal,
+  maxOutputTokens,
 }: StructuredResponseParams<TSchema> & { model: string }): Promise<{
   data: z.infer<TSchema>;
   model: string;
+  telemetry: StructuredResponseTelemetry;
 }> {
   let lastError: unknown;
+  const startedAt = Date.now();
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
     try {
@@ -106,6 +122,9 @@ async function requestWithRetries<TSchema extends z.ZodType>({
         text: {
           format: zodTextFormat(schema, schemaName),
         },
+        max_output_tokens: maxOutputTokens,
+        prompt_cache_key: createPromptCacheKey(model, schemaName, instructions),
+        store: false,
       }, { maxRetries: 0, signal });
 
       if (!response.output_parsed) {
@@ -116,7 +135,15 @@ async function requestWithRetries<TSchema extends z.ZodType>({
 
       return {
         data: response.output_parsed,
-        model,
+        model: response.model || model,
+        telemetry: {
+          model: response.model || model,
+          durationMs: Date.now() - startedAt,
+          inputTokens: response.usage?.input_tokens,
+          outputTokens: response.usage?.output_tokens,
+          cachedInputTokens: response.usage?.input_tokens_details.cached_tokens,
+          attempts: attempt + 1,
+        },
       };
     } catch (error) {
       lastError = error;
@@ -136,10 +163,35 @@ async function requestWithRetries<TSchema extends z.ZodType>({
   throw lastError;
 }
 
-function normalizeOpenAIError(error: unknown) {
+function paramsModelOrDefault<TSchema extends z.ZodType>(
+  params: StructuredResponseParams<TSchema>,
+) {
+  return params.model?.trim() || resolveOpenAIModel();
+}
+
+function createPromptCacheKey(
+  model: string,
+  schemaName: string,
+  instructions: string,
+) {
+  return `creatoros:${createHash("sha256")
+    .update(`${model}:${schemaName}:${instructions}`)
+    .digest("hex")
+    .slice(0, 32)}`;
+}
+
+function normalizeOpenAIError(error: unknown, stage?: string) {
   if (error instanceof MissingOpenAIKeyError) {
     return error;
   }
+
+  console.warn(
+    JSON.stringify({
+      event: "generation_provider_failure",
+      stage: stage || "unknown",
+      category: getOpenAIErrorCategory(error),
+    }),
+  );
 
   return new UpstreamGenerationError(getErrorMessage(error));
 }

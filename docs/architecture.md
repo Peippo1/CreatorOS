@@ -22,6 +22,8 @@ Each agent lives in its own module and owns a single responsibility:
 The orchestration is deliberately sequential because each downstream step depends on the structured output from the previous agent.
 This separation is the main product bet: a generic prompt tends to blend diagnosis, strategy, and asset generation, while CreatorOS keeps each job narrow enough to produce sharper growth strategy.
 
+Each stage has its own timeout inside the overall generation deadline. The OpenAI wrapper records safe timing and usage metadata, disables provider-side response storage for these source-heavy requests, and uses a stable instruction prefix so prompt caching can work without putting source material into logs. Audience extraction has a bounded ten-minute in-process cache keyed by a digest of validated inputs; this is a best-effort optimization and is not a replacement for shared persistence.
+
 ## File Structure
 
 ```text

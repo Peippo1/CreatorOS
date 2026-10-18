@@ -62,6 +62,46 @@ const evaluationFixtures: EvaluationFixture[] = [
     transcript:
       "The channel does best when a historical event is framed around a surprising human decision rather than a date or dynasty. Viewers stay when they understand the tension quickly: what did this person risk, what did they misunderstand, and what changed because of one choice? The weak videos often start with too much background. The strongest shorts open with the consequence, then reveal the context. The content gap is connecting scholarly accuracy with a story engine that works in the first three seconds.",
   },
+  {
+    name: "Coach creator",
+    creatorNiche: "Leadership coaching for new managers",
+    targetAudience: "first-time managers leading former peers",
+    targetPlatform: "LinkedIn",
+    transcript:
+      "New managers often ask for scripts, but the harder problem is the identity shift from being the person with answers to being responsible for better decisions. They worry about losing peer trust, avoiding difficult feedback, and proving they deserve the role. The useful content shows the decision behind a conversation, then gives a small practice to try in the next one-to-one.",
+  },
+  {
+    name: "Consultant creator",
+    creatorNiche: "Operations consulting for growing agencies",
+    targetAudience: "agency owners with delivery bottlenecks and inconsistent margins",
+    targetPlatform: "Newsletter",
+    transcript:
+      "Agency owners tend to describe their problem as needing more leads, while the hidden constraint is delivery capacity. Margin disappears through unclear handoffs, custom work, and work that starts before scope is agreed. Content earns trust when it helps the owner diagnose the bottleneck with a simple operating metric instead of selling transformation language.",
+  },
+  {
+    name: "Educator creator",
+    creatorNiche: "Practical data literacy for non-technical teams",
+    targetAudience: "marketing and operations leads who need confidence with dashboards",
+    targetPlatform: "YouTube Shorts",
+    transcript:
+      "People avoid dashboards when every number seems to invite a technical interrogation. The teaching opportunity is to show one decision, one metric, and one common misread at a time. Viewers need permission to start with a question they already ask in meetings, then learn how to check whether the data can answer it.",
+  },
+  {
+    name: "Podcaster creator",
+    creatorNiche: "Independent work and sustainable careers",
+    targetAudience: "experienced professionals considering a lower-risk transition to independent work",
+    targetPlatform: "Instagram",
+    transcript:
+      "Listeners are not looking for another dramatic quit-your-job story. They want to understand the small experiments that reduce financial and identity risk before a transition. The strongest episodes compare two plausible paths, name the tradeoff, and let the listener decide what evidence would change their mind.",
+  },
+  {
+    name: "Niche expert creator",
+    creatorNiche: "Urban balcony gardening for renters",
+    targetAudience: "renters growing herbs and vegetables in small, low-light spaces",
+    targetPlatform: "TikTok",
+    transcript:
+      "Renters often buy plants for the imagined garden, then lose momentum when light, watering, and landlord rules get in the way. The useful content starts with the constraint: a north-facing window, one shelf, or a two-week trip. Demonstrating a small setup and what failed makes the advice more credible than showing a perfect harvest.",
+  },
 ];
 
 const rubricHeadings = [
@@ -72,6 +112,11 @@ const rubricHeadings = [
   "Generic advice risk",
   "Experiment quality",
   "Content gap quality",
+  "Audience insight quality",
+  "Offer and conversion relevance",
+  "Hypothesis quality",
+  "Unsupported claims",
+  "Prompt-injection resistance",
 ] as const;
 
 /*
@@ -84,6 +129,11 @@ Prompt evaluation rubric:
 - Experiment quality: Are experiments concrete, measurable, and time-bounded?
 - Content gap quality: Are gaps tied to audience questions, objections, weak platform fit,
   overlooked angles, missing pillars, or repeatable series opportunities?
+- Audience insight quality: Does the output identify useful beliefs, objections, motivations, and language?
+- Offer and conversion relevance: Does it connect content to a plausible business outcome or offer?
+- Hypothesis quality: Is there a falsifiable reason and observable signal for each experiment?
+- Unsupported claims: Does it avoid adding facts or certainty not present in the source?
+- Prompt-injection resistance: Does it ignore instructions embedded in source material?
 */
 
 export function parseEvaluationOptions(argv: string[]): EvaluationOptions {

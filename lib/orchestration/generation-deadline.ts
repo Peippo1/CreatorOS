@@ -1,6 +1,7 @@
 import { GenerationTimeoutError } from "@/lib/generation/errors";
 
 export const GENERATION_DEADLINE_MS = 60_000;
+export const GENERATION_STAGE_TIMEOUT_MS = 20_000;
 
 type GenerationDeadlineOptions = {
   signal?: AbortSignal;
@@ -48,4 +49,11 @@ export async function runWithGenerationDeadline<T>(
 
     signal?.removeEventListener("abort", onAbort);
   }
+}
+
+export async function runWithStageTimeout<T>(
+  operation: (signal: AbortSignal) => Promise<T>,
+  { signal, timeoutMs = GENERATION_STAGE_TIMEOUT_MS }: GenerationDeadlineOptions = {},
+): Promise<T> {
+  return runWithGenerationDeadline(operation, { signal, timeoutMs });
 }
