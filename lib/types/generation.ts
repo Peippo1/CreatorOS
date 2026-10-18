@@ -112,8 +112,32 @@ export const creatorGrowthPackSchema = z.object({
   meta: z.object({
     model: z.string(),
     usedMockData: z.boolean(),
+    stages: z.array(
+      z.object({
+        stage: z.enum(["audience", "strategy", "repurposing"]),
+        model: z.string(),
+        durationMs: z.number().nonnegative(),
+        inputTokens: z.number().int().nonnegative().optional(),
+        outputTokens: z.number().int().nonnegative().optional(),
+        cachedInputTokens: z.number().int().nonnegative().optional(),
+        attempts: z.number().int().positive().optional(),
+        cacheHit: z.boolean().optional(),
+      }),
+    ),
   }),
 });
+
+export type GenerationStage = "audience" | "strategy" | "repurposing";
+export type GenerationStageTelemetry = {
+  stage: GenerationStage;
+  model: string;
+  durationMs: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  cachedInputTokens?: number;
+  attempts?: number;
+  cacheHit?: boolean;
+};
 
 export type TargetPlatform = z.infer<typeof targetPlatformSchema>;
 export type GenerateInput = z.infer<typeof generateInputSchema>;

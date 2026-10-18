@@ -28,7 +28,35 @@ export function isModelAvailabilityError(error: unknown) {
 export function isRetryableOpenAIError(error: unknown) {
   const status = getStatusCode(error);
 
-  return status === 408 || status === 409 || status === 429 || status >= 500;
+  if (status === 429) {
+    return getErrorCode(error) !== "insufficient_quota";
+  }
+
+  return status === 408 || status === 409 || status >= 500;
+}
+
+export type OpenAIErrorCategory =
+  | "missing_key"
+  | "quota"
+  | "rate_limited"
+  | "model_unavailable"
+  | "timeout"
+  | "provider"
+  | "unknown";
+
+export function getOpenAIErrorCategory(error: unknown): OpenAIErrorCategory {
+  if (error instanceof MissingOpenAIKeyError) return "missing_key";
+  if (isModelAvailabilityError(error)) return "model_unavailable";
+
+  const status = getStatusCode(error);
+  if (status === 408) return "timeout";
+  if (status === 429) {
+    return getErrorCode(error) === "insufficient_quota"
+      ? "quota"
+      : "rate_limited";
+  }
+  if (status >= 400 && status < 600) return "provider";
+  return "unknown";
 }
 
 export function getErrorMessage(error: unknown) {
@@ -50,4 +78,17 @@ function getStatusCode(error: unknown) {
   }
 
   return 0;
+}
+
+function getErrorCode(error: unknown) {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof error.code === "string"
+  ) {
+    return error.code;
+  }
+
+  return "";
 }

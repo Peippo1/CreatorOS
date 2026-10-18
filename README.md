@@ -165,7 +165,14 @@ Open [http://localhost:3000](http://localhost:3000).
 ```bash
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-5.2
+OPENAI_REPURPOSING_MODEL=
 CREATOROS_ALLOW_MOCK=true
+CREATOROS_AUDIENCE_TIMEOUT_MS=18000
+CREATOROS_STRATEGY_TIMEOUT_MS=22000
+CREATOROS_REPURPOSING_TIMEOUT_MS=20000
+CREATOROS_AUDIENCE_MAX_OUTPUT_TOKENS=1800
+CREATOROS_STRATEGY_MAX_OUTPUT_TOKENS=2400
+CREATOROS_REPURPOSING_MAX_OUTPUT_TOKENS=2200
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
@@ -174,7 +181,9 @@ SUPABASE_SERVICE_ROLE_KEY=
 
 Supabase is optional for local demos. Without the Supabase variables, CreatorOS uses a server-side demo store. For a real beta, run `supabase/schema.sql`, configure email magic links, and set either `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` or `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Set the service-role key only as a server-side secret. Source material is never written to logs. The migration also installs a shared Postgres rate-limit function and beta event table.
 
-The code prefers `OPENAI_MODEL` when provided. If no model is configured, it uses the documented fallback constant `gpt-5.2`. If a configured model is unavailable or inaccessible to the API key, the OpenAI wrapper retries once with `gpt-5.2`. Other API failures are surfaced to the UI. Production fails closed when `OPENAI_API_KEY` is missing; set `CREATOROS_ALLOW_MOCK=true` only for local, non-production demos.
+The code prefers `OPENAI_MODEL` when provided. If no model is configured, it uses the documented fallback constant `gpt-5.2`. `OPENAI_REPURPOSING_MODEL` can be used for a separately evaluated, lower-cost repurposing model. If a configured model is unavailable or inaccessible to the API key, the OpenAI wrapper falls back to `gpt-5.2`; transient provider failures may be retried up to two times. Quota exhaustion is not retried. Other API failures are surfaced to the UI. Production fails closed when `OPENAI_API_KEY` is missing; set `CREATOROS_ALLOW_MOCK=true` only for local, non-production demos.
+
+Live generations enforce per-stage timeouts inside the overall 60-second deadline and return safe stage telemetry in the response metadata: actual model, duration, attempts, and provider-reported token counts when available. This metadata contains no prompt, transcript, source material, or credentials. Audience intelligence uses a bounded, short-lived in-process cache keyed by a SHA-256 digest of the validated inputs; it is a best-effort serverless optimization, not shared persistence.
 
 If `OPENAI_API_KEY` is missing, CreatorOS returns deterministic mock output so the product workflow can be demonstrated locally. The fallback is template-driven and keyed to the creator niche, target platform, target audience, and transcript, so demos feel specific without pretending to be live model output. It is useful for demos and contract checks but should not be read as live model quality.
 
@@ -226,7 +235,7 @@ Run local prompt evaluations with:
 npm run eval:prompts
 ```
 
-The evaluator runs three realistic creator fixtures through the orchestration pipeline and prints structured Growth Pack output. With `OPENAI_API_KEY` configured, it exercises the live agent prompts. Without a key, it uses the deterministic mock path, which is useful for shape checks but not prompt-quality review. That fallback is deterministic and fixture-aware, so it is good for demos and regression checks, not for judging live model quality.
+The evaluator runs eight sanitized creator fixtures through the orchestration pipeline and prints structured Growth Pack output. With `OPENAI_API_KEY` configured, it exercises the live agent prompts. Without a key, it uses the deterministic mock path, which is useful for shape checks but not prompt-quality review. That fallback is deterministic and fixture-aware, so it is good for demos and regression checks, not for judging live model quality.
 
 To write local artifacts for comparison over time:
 
@@ -248,6 +257,11 @@ When iterating on prompts, keep changes narrow and compare outputs against:
 - Generic advice or bland CTA leakage
 - Experiment quality
 - Content gap quality
+- Audience insight quality
+- Offer and conversion relevance
+- Hypothesis quality
+- Unsupported claims
+- Prompt-injection resistance
 
 To compare prompt changes over time, keep one run per major prompt change and diff the generated artifacts by fixture. The rubric is intentionally manual: use the blank score and notes fields to record what improved, what regressed, and where the output still reads generic.
 

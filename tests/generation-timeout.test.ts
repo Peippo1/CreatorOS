@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { GenerationTimeoutError } from "@/lib/generation/errors";
-import { runWithGenerationDeadline } from "@/lib/orchestration/generation-deadline";
+import {
+  runWithGenerationDeadline,
+  runWithStageTimeout,
+} from "@/lib/orchestration/generation-deadline";
 
 describe("generation deadline", () => {
   it("aborts in-flight work and reports a timeout when the deadline expires", async () => {
@@ -22,6 +25,21 @@ describe("generation deadline", () => {
 
     await rejection;
     expect(operation).toHaveBeenCalledOnce();
+
+    vi.useRealTimers();
+  });
+
+  it("supports an independent stage timeout", async () => {
+    vi.useFakeTimers();
+
+    const result = runWithStageTimeout(
+      () => new Promise<never>(() => undefined),
+      { timeoutMs: 50 },
+    );
+
+    const rejection = expect(result).rejects.toBeInstanceOf(GenerationTimeoutError);
+    await vi.advanceTimersByTimeAsync(50);
+    await rejection;
 
     vi.useRealTimers();
   });

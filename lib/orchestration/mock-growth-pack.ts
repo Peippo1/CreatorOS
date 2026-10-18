@@ -208,6 +208,7 @@ export function createMockGrowthPack(input: GenerateInput): CreatorGrowthPack {
     meta: {
       model: DEFAULT_OPENAI_MODEL,
       usedMockData: true,
+      stages: [],
     },
   };
 }
