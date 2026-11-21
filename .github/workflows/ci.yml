@@ -7,6 +7,7 @@ on:
       - "components/**"
       - "lib/**"
       - "tests/**"
+      - "e2e/**"
       - "scripts/**"
       - "public/**"
       - "supabase/**"
@@ -15,6 +16,7 @@ on:
       - "next.config.ts"
       - "tsconfig.json"
       - "eslint.config.*"
+      - "playwright.config.ts"
       - ".github/workflows/ci.yml"
   push:
     branches: [main]
@@ -23,6 +25,7 @@ on:
       - "components/**"
       - "lib/**"
       - "tests/**"
+      - "e2e/**"
       - "scripts/**"
       - "public/**"
       - "supabase/**"
@@ -31,6 +34,7 @@ on:
       - "next.config.ts"
       - "tsconfig.json"
       - "eslint.config.*"
+      - "playwright.config.ts"
       - ".github/workflows/ci.yml"
 
 permissions:
@@ -54,3 +58,9 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e -- e2e/beta-journey.spec.ts
+      - if: ${{ vars.E2E_BASE_URL != '' }}
+        run: npm run test:e2e -- e2e/readiness.spec.ts
+        env:
+          E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
