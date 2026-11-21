@@ -22,12 +22,12 @@
     "class-variance-authority": "latest",
     "clsx": "latest",
     "lucide-react": "latest",
-    "next": "^16.3.0-preview.10",
+    "next": "16.4.5",
     "openai": "latest",
     "react": "latest",
     "react-dom": "latest",
     "tailwind-merge": "latest",
-    "zod": "latest"
+    "zod": "4.6.6"
   },
   "overrides": {
     "postcss": "8.5.18"
